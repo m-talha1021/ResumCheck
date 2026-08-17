@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://f230562-resumeiq.netlify.app/sitemap.xml
