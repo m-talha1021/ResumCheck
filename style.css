@@ -1738,49 +1738,7 @@ nav {
 
 }
 
-/*======================================================
-                SOCIAL ICONS
-======================================================*/
 
-.social-icons {
-
-    display: flex;
-
-    gap: 18px;
-
-    margin-top: 15px;
-
-}
-
-.social-icons a {
-
-    width: 48px;
-
-    height: 48px;
-
-    border-radius: 50%;
-
-    background: var(--primary);
-
-    color: white;
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    transition: .35s;
-
-}
-
-.social-icons a:hover {
-
-    transform: translateY(-5px);
-
-    background: var(--secondary);
-
-}
 
 /*======================================================
                 RESPONSIVE
@@ -1925,6 +1883,7 @@ footer {
     color: white;
 
     padding-left: 5px;
+        text-decoration: underline;
 
 }
 
