@@ -1155,7 +1155,7 @@ nav {
 #loading h2 {
 
     margin-top: 30px;
-
+    display:flex;
     font-size: 30px;
 
 }
@@ -1195,7 +1195,7 @@ nav {
 
 .result-container {
     max-width: 1300px;
-    margin: auto;
+    margin: 10px;
 }
 
 .score-card {
