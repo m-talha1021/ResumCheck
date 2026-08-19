@@ -1155,7 +1155,6 @@ nav {
 #loading h2 {
 
     margin-top: 30px;
-    display:flex;
     font-size: 30px;
 
 }
@@ -1189,7 +1188,7 @@ display:flex;
 ======================================================*/
 
 .result-section {
-    padding: 10px 8%;
+    padding: 60px 8%;
     background: #7c7c7c;
 }
 
