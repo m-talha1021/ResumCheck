@@ -1163,7 +1163,7 @@ nav {
 #loading p {
 
     margin-top: 10px;
-
+display:flex;
     color: var(--gray);
 
 }
@@ -1189,13 +1189,13 @@ nav {
 ======================================================*/
 
 .result-section {
-    padding: 60px 8%;
+    padding: 10px 8%;
     background: #7c7c7c;
 }
 
 .result-container {
     max-width: 1300px;
-    margin: 10px;
+    margin: auto;
 }
 
 .score-card {
