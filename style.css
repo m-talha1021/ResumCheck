@@ -1907,49 +1907,7 @@ footer {
 
 }
 
-/*======================================================
-                BACK TO TOP BUTTON
-======================================================*/
 
-#topBtn {
-
-    position: fixed;
-
-    bottom: 30px;
-
-    right: 30px;
-
-    width: 55px;
-
-    height: 55px;
-
-    border: none;
-
-    border-radius: 50%;
-
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-
-    color: white;
-
-    cursor: pointer;
-
-    font-size: 20px;
-
-    box-shadow: 0 10px 25px rgba(37, 99, 235, .3);
-
-    display: none;
-
-    transition: .35s;
-
-    z-index: 999;
-
-}
-
-#topBtn:hover {
-
-    transform: translateY(-6px);
-
-}
 
 /*======================================================
                 FADE ANIMATION
