@@ -1,7 +1,12 @@
 /*======================================================
         GOOGLE FONT
 ======================================================*/
-
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    align-items: start;
+}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 .analysis-grid {
     display: grid;
