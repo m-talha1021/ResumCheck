@@ -3,7 +3,37 @@
 ======================================================*/
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+    align-items: start;
+}
 
+.analysis-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    height: auto;
+    align-self: start;
+}
+
+.analysis-card h3 {
+    margin-bottom: 15px;
+    color: #0d6efd;
+}
+
+.analysis-card ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.analysis-card li {
+    margin-bottom: 12px;
+    line-height: 1.7;
+}
 /*======================================================
         RESET
 ======================================================*/
