@@ -21,28 +21,6 @@ const pdfParse =
 
 const { GoogleGenAI } = require("@google/genai");
 
-/*
-=========================================================
-RESUMCHECK - ANALYZE API
-=========================================================
-
-Supports:
-- PDF
-- DOCX
-- TXT
-- Pasted resume text
-- 5 MB file limit
-- Formidable multipart parsing
-- PDF text extraction
-- DOCX text extraction
-- Deterministic ATS score
-- Gemini qualitative analysis
-- Multiple Gemini model fallback
-- Candidate-name extraction
-- Vercel Serverless Functions
-=========================================================
-*/
-
 
 /*
 =========================================================
@@ -390,6 +368,15 @@ async function extractResumeFromFile(file) {
     );
   }
 
+  /*
+  IMPORTANT:
+  Keep the ORIGINAL filename.
+
+  This is what will be returned to
+  the frontend and can be printed
+  in the downloaded PDF report.
+  */
+
   const originalName =
     file.originalFilename ||
     file.name ||
@@ -450,7 +437,19 @@ async function extractResumeFromFile(file) {
 
   return {
     text: normalizeResumeText(text),
+
+    /*
+    Return the ORIGINAL uploaded filename.
+    */
+
     fileName: originalName,
+
+    /*
+    Also expose it under a more explicit
+    name for the PDF/report frontend.
+    */
+
+    resumeFileName: originalName,
   };
 }
 
@@ -507,23 +506,9 @@ function extractCandidateName(
       continue;
     }
 
-    /*
-    Example:
-
-    Muhammad Talha | Software Engineer
-
-    becomes:
-
-    Muhammad Talha
-    */
-
     candidate = candidate
       .split(/\s+[|•–—:]\s+/)[0]
       .trim();
-
-    /*
-    Reject contact information.
-    */
 
     if (
       /@/.test(candidate) ||
@@ -537,11 +522,7 @@ function extractCandidateName(
 
     /*
     IMPORTANT:
-    JavaScript does NOT support the
-    /ix regex flag.
-
-    This is intentionally written
-    using only the valid /i flag.
+    JavaScript supports /i but NOT /ix.
     */
 
     if (
@@ -551,10 +532,6 @@ function extractCandidateName(
     ) {
       continue;
     }
-
-    /*
-    Reject lines containing numbers.
-    */
 
     if (/\d/.test(candidate)) {
       continue;
@@ -576,11 +553,6 @@ function extractCandidateName(
     ) {
       continue;
     }
-
-    /*
-    Allow normal international
-    alphabetic names.
-    */
 
     const namePattern =
       /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'’\-]*(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'’\-]*){1,5}$/;
@@ -674,20 +646,6 @@ function getScoreLabel(score) {
 =========================================================
 DETERMINISTIC ATS SCORE
 =========================================================
-
-IMPORTANT:
-
-Gemini NEVER calculates the ATS score.
-
-The same extracted resume text always
-produces the same score.
-
-There is:
-- no random number
-- no Date dependency
-- no Gemini score
-- no temperature dependency
-=========================================================
 */
 
 function calculateDeterministicBreakdown(
@@ -708,9 +666,7 @@ function calculateDeterministicBreakdown(
   const length = text.length;
 
   /*
-  =======================================================
   FORMATTING - 20
-  =======================================================
   */
 
   const hasEmail =
@@ -782,9 +738,7 @@ function calculateDeterministicBreakdown(
   }
 
   /*
-  =======================================================
   KEYWORDS - 25
-  =======================================================
   */
 
   const skillWords = [
@@ -829,9 +783,7 @@ function calculateDeterministicBreakdown(
   }
 
   /*
-  =======================================================
   EXPERIENCE - 20
-  =======================================================
   */
 
   const actionHits = countHits(
@@ -888,9 +840,7 @@ function calculateDeterministicBreakdown(
   }
 
   /*
-  =======================================================
   PROJECTS - 15
-  =======================================================
   */
 
   let projects = 4;
@@ -922,9 +872,7 @@ function calculateDeterministicBreakdown(
   }
 
   /*
-  =======================================================
   EDUCATION - 10
-  =======================================================
   */
 
   let education = 3;
@@ -961,9 +909,7 @@ function calculateDeterministicBreakdown(
   }
 
   /*
-  =======================================================
   PROFESSIONALISM - 10
-  =======================================================
   */
 
   let professionalism = 5;
@@ -991,12 +937,6 @@ function calculateDeterministicBreakdown(
   ) {
     professionalism += 1;
   }
-
-  /*
-  =======================================================
-  FINAL CLAMPING
-  =======================================================
-  */
 
   return {
     formatting: Math.round(
@@ -1172,10 +1112,6 @@ function createLocalAnalysis(
   const missingSkills = [];
   const suggestions = [];
 
-  /*
-  STRENGTHS
-  */
-
   if (
     hasEmail &&
     hasPhone
@@ -1210,10 +1146,6 @@ function createLocalAnalysis(
       "A projects section is present and can support technical evidence."
     );
   }
-
-  /*
-  WEAKNESSES
-  */
 
   if (!hasEmail) {
     weaknesses.push(
@@ -1253,10 +1185,6 @@ function createLocalAnalysis(
     );
   }
 
-  /*
-  MISSING SKILLS
-  */
-
   const recommendedSkills = [
     "Python",
     "SQL",
@@ -1284,10 +1212,6 @@ function createLocalAnalysis(
       );
     }
   }
-
-  /*
-  SUGGESTIONS
-  */
 
   suggestions.push(
     "Use standard headings such as Summary, Skills, Experience, Projects, and Education."
@@ -1460,12 +1384,6 @@ async function runGemini(
   const apiKey =
     process.env.GEMINI_API_KEY;
 
-  /*
-  Gemini is optional.
-  The deterministic local analysis
-  still works without an API key.
-  */
-
   if (!apiKey) {
     console.warn(
       "GEMINI_API_KEY is not configured."
@@ -1514,11 +1432,6 @@ async function runGemini(
               "application/json",
 
             responseSchema,
-
-            /*
-            Deterministic qualitative
-            Gemini generation.
-            */
 
             temperature: 0,
 
@@ -1584,27 +1497,15 @@ function finalizeAnalysis(
   resumeText,
   geminiData
 ) {
-  /*
-  Local deterministic analysis.
-  */
-
   const local =
     createLocalAnalysis(
       resumeText
     );
 
-  /*
-  Candidate name.
-  */
-
   const candidateName =
     extractCandidateName(
       resumeText
     );
-
-  /*
-  Gemini qualitative information.
-  */
 
   const strengths =
     Array.isArray(
@@ -1637,13 +1538,6 @@ function finalizeAnalysis(
     geminiData.suggestions.length
       ? geminiData.suggestions
       : local.suggestions;
-
-  /*
-  IMPORTANT:
-  Numeric ATS score ALWAYS comes
-  from local deterministic analysis.
-  Gemini cannot modify it.
-  */
 
   return {
     candidateName,
@@ -1706,9 +1600,7 @@ async function cleanupUploadedFile(
       filePath
     );
   } catch {
-    /*
-    Ignore cleanup errors.
-    */
+    // Ignore cleanup errors.
   }
 }
 
@@ -1776,10 +1668,6 @@ async function handler(
   req,
   res
 ) {
-  /*
-  CORS
-  */
-
   res.setHeader(
     "Access-Control-Allow-Origin",
     "*"
@@ -1800,10 +1688,6 @@ async function handler(
     "no-store"
   );
 
-  /*
-  OPTIONS
-  */
-
   if (
     req.method === "OPTIONS"
   ) {
@@ -1811,10 +1695,6 @@ async function handler(
       .status(204)
       .end();
   }
-
-  /*
-  POST ONLY
-  */
 
   if (
     req.method !== "POST"
@@ -1838,6 +1718,9 @@ async function handler(
     let resumeText = "";
 
     let fileName =
+      "Pasted Resume";
+
+    let resumeFileName =
       "Pasted Resume";
 
     /*
@@ -1864,6 +1747,9 @@ async function handler(
         );
 
       fileName =
+        "Pasted Resume";
+
+      resumeFileName =
         "Pasted Resume";
     }
 
@@ -1938,8 +1824,15 @@ async function handler(
         resumeText =
           extracted.text;
 
+        /*
+        KEEP THE ORIGINAL FILENAME.
+        */
+
         fileName =
           extracted.fileName;
+
+        resumeFileName =
+          extracted.resumeFileName;
       }
     }
 
@@ -1956,21 +1849,10 @@ async function handler(
       });
     }
 
-    /*
-    =====================================================
-    NORMALIZE
-    =====================================================
-    */
-
     resumeText =
       normalizeResumeText(
         resumeText
       );
-
-    /*
-    Prevent excessively large
-    extracted text from reaching Gemini.
-    */
 
     if (
       resumeText.length >
@@ -1983,24 +1865,12 @@ async function handler(
         );
     }
 
-    /*
-    =====================================================
-    EMPTY RESUME
-    =====================================================
-    */
-
     if (!resumeText) {
       return res.status(400).json({
         error:
           "Could not extract readable text from this resume.",
       });
     }
-
-    /*
-    =====================================================
-    VERY SHORT RESUME
-    =====================================================
-    */
 
     if (
       resumeText.length < 50
@@ -2015,6 +1885,7 @@ async function handler(
       "Resume extracted successfully:",
       {
         fileName,
+        resumeFileName,
         characters:
           resumeText.length,
       }
@@ -2058,16 +1929,55 @@ async function handler(
     =====================================================
     SUCCESS RESPONSE
     =====================================================
+
+    The uploaded filename is returned
+    in THREE places so the frontend PDF
+    generator can use whichever structure
+    it already expects.
     */
 
     return res.status(200).json({
       ...analysis,
 
-      fileName,
+      /*
+      Original filename
+      */
+
+      fileName:
+        fileName ||
+        "Pasted Resume",
 
       /*
-      This timestamp is informational only.
-      It NEVER participates in the ATS score.
+      Explicit resume filename
+      */
+
+      resumeFileName:
+        resumeFileName ||
+        fileName ||
+        "Pasted Resume",
+
+      /*
+      Report metadata
+      */
+
+      reportMeta: {
+        resumeFileName:
+          resumeFileName ||
+          fileName ||
+          "Pasted Resume",
+
+        fileName:
+          fileName ||
+          "Pasted Resume",
+
+        candidateName:
+          analysis.candidateName ||
+          "Candidate",
+      },
+
+      /*
+      Informational timestamp.
+      NEVER used in ATS scoring.
       */
 
       createdAt:
@@ -2096,10 +2006,6 @@ async function handler(
         error?.message || ""
       );
 
-    /*
-    5 MB error
-    */
-
     if (
       /max.*file.*size/i.test(
         message
@@ -2116,8 +2022,6 @@ async function handler(
 
     /*
     Always return JSON.
-    This prevents the frontend from
-    receiving an HTML Vercel error page.
     */
 
     return res.status(500).json({
