@@ -242,36 +242,36 @@
                     <span>START YOUR ANALYSIS</span>
                     <h2>Check Your Resume ATS Score</h2>
                     <p>
-                        Upload your resume, drag and drop a file, or paste
-                        the resume text. Our analyzer will evaluate it and
-                        generate a detailed report.
+                        Drop your resume below and get a clear ATS score, keyword insights, and practical improvements in seconds.
                     </p>
                 </div>
                 <div class="upload-card">
+                    <div class="upload-card-top">
+                        <div>
+                            <span class="upload-kicker"><i class="fa-solid fa-shield-halved"></i> Private &amp; secure</span>
+                            <h3>Upload your resume</h3>
+                            <p>PDF, DOCX, or TXT · Maximum 4 MB</p>
+                        </div>
+                        <div class="upload-status">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Instant ATS check</span>
+                        </div>
+                    </div>
 
                     <form id="analyzeForm">
-                        <div class="mode-toggle" role="tablist" aria-label="Resume input method">
-                            <button type="button" class="mode-btn active" id="fileModeBtn" role="tab"
-                                aria-selected="true">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
-                            </button>
-                            <button type="button" class="mode-btn" id="textModeBtn" role="tab" aria-selected="false">
-                                <i class="fa-solid fa-paste"></i> Paste Text
-                            </button>
+                        <div class="legacy-mode-controls" aria-hidden="true">
+                            <button type="button" class="mode-btn active" id="fileModeBtn" tabindex="-1">Upload File</button>
+                            <button type="button" class="mode-btn" id="textModeBtn" tabindex="-1">Paste Text</button>
                         </div>
+
                         <div id="fileMode">
                             <div class="upload-box" id="dropzone" role="button" tabindex="0" aria-label="Upload resume">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <h3 id="fileHeading">
-                                    Drag &amp; Drop Resume
-                                </h3>
+                                <h3 id="fileHeading">Drop your resume here</h3>
                                 <p id="fileSub">
-                                    or click here to browse files (.pdf,
-                                    .docx, .txt)
+                                    Drag &amp; drop your file here, or <strong>browse from your device</strong><br><small>PDF · DOCX · TXT</small>
                                 </p>
-                                <div class="file-name" id="fileName">
-                                    No file selected
-                                </div>
+                                <div class="file-name" id="fileName"><i class="fa-regular fa-file"></i> No file selected</div>
                                 <input id="fileInput" type="file"
                                     accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                                     hidden />
@@ -286,9 +286,14 @@
 
                         <div id="errorMsg" class="alert error hidden"></div>
                         <button type="submit" class="analyze-btn" id="analyzeBtn">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            Analyze Resume Now
+                            <span>Analyze My Resume</span>
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
+                        <div class="upload-trust">
+                            <span><i class="fa-solid fa-lock"></i> Your resume stays private</span>
+                            <span><i class="fa-solid fa-clock"></i> Results in seconds</span>
+                            <span><i class="fa-solid fa-chart-line"></i> Deterministic ATS score</span>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -297,8 +302,8 @@
         <section id="resultSection" class="section gray hidden">
             <div class="container results">
                 <div class="section-head">
-                    <span>AI RESUME ANALYSIS</span>
-                    <h2>Your Resume Analysis</h2>
+                    <span>YOUR ATS REPORT</span>
+                    <h2>Resume performance at a glance</h2>
                     <p>
                         Detailed evaluation against top ATS software
                         standards and resume quality metrics.
@@ -312,6 +317,7 @@
                     </div>
                     <h3 id="scoreLabel">Good</h3>
                     <p id="scoreDescription"></p>
+                    <div class="score-note"><i class="fa-solid fa-circle-info"></i> Your numeric score is calculated consistently from the resume content.</div>
                 </div>
                 <div class="breakdown">
                     <h3>
