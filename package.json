@@ -2,9 +2,9 @@
   "name": "resumcheck-vercel",
   "version": "1.0.0",
   "private": true,
-  "description": "AI Resume ATS Checker",
   "dependencies": {
     "@google/genai": "^2.27.0",
-    "mammoth": "^1.10.0"
+    "mammoth": "^1.10.0",
+    "pdf-parse": "1.1.1"
   }
 }
