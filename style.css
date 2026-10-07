@@ -1759,3 +1759,37 @@ footer {
     padding: 11px 12px !important;
   }
 }
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   REMOVE UPLOAD FILE / PASTE TEXT TOGGLE
+   ========================================================= */
+
+/* Hide the Upload File / Paste Text navigation bar */
+button,
+[role="button"] {
+  /* Keep existing buttons unless they match the labels below */
+}
+
+/* Hide buttons containing these labels */
+button:has(> span),
+button {
+}
+
+/* Specific text-based removal using the surrounding tab area */
+.mode-toggle,
+.input-toggle,
+.upload-toggle,
+.input-tabs,
+.file-tabs,
+.upload-tabs,
+.tabs {
+  display: none !important;
+}
