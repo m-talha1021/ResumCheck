@@ -5,12 +5,6 @@
   "engines": {
     "node": ">=20"
   },
-  "description": "AI Resume ATS Checker - Vercel-ready",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo \"Static frontend - no build step required\""
-  },
   "dependencies": {
     "@google/genai": "^2.18.0",
     "express": "^4.21.2",
