@@ -183,7 +183,7 @@
             selectedFile = null;
 
             showError(
-                "File is too large. Please upload a resume smaller than 4 MB."
+                "File is too large. Please upload a resume smaller than 5 MB."
             );
 
             return;
@@ -206,13 +206,40 @@
         }
 
         if (dropzone) {
+            dropzone.classList.add("has-file");
+        }
+    }
 
-        // Use a capture-phase click so the native file picker works
-        // even if the upload card contains nested clickable elements.
+
+    /*
+    =======================================================
+    FILE INPUT / DROPZONE EVENTS
+    =======================================================
+    */
+
+    if (fileInput) {
+        fileInput.addEventListener(
+            "change",
+            (event) => {
+                const file =
+                    event.target.files?.[0];
+
+                handleSelectedFile(file);
+            }
+        );
+    }
+
+
+    if (dropzone) {
+
         dropzone.addEventListener(
             "click",
             (event) => {
-                if (event.target === fileInput) return;
+
+                // Ignore clicks that originate from the input itself.
+                if (event.target === fileInput) {
+                    return;
+                }
 
                 event.preventDefault();
                 event.stopPropagation();
@@ -241,7 +268,6 @@
                         fileInput.click();
                     }
                 }
-
             }
         );
 
@@ -299,10 +325,10 @@
                     event.dataTransfer?.files?.[0];
 
                 handleSelectedFile(file);
-
             }
         );
     }
+
 
     /* =======================================================
        INPUT MODE COMPATIBILITY
@@ -2029,5 +2055,4 @@
         initialize();
     }
 
-}
 })();
