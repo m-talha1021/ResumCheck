@@ -1266,3 +1266,496 @@ footer {
         background: #fff
     }
 }
+
+
+/* =========================================================
+   RESUMCHECK — ATS INSIGHTS SECTION OVERRIDE
+   Paste this at the VERY END of style.css
+   ========================================================= */
+
+/* Main 2-column layout */
+.insights-grid,
+.results-grid,
+.analysis-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+  margin-top: 28px !important;
+  width: 100% !important;
+}
+
+/* Generic card override */
+.insight-card,
+.results-card,
+.analysis-card {
+  position: relative !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 22px !important;
+  padding: 26px !important;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06) !important;
+  overflow: hidden !important;
+  min-height: 250px !important;
+  box-sizing: border-box !important;
+  transition: transform 0.2s ease,
+              box-shadow 0.2s ease !important;
+}
+
+.insight-card:hover,
+.results-card:hover,
+.analysis-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.10) !important;
+}
+
+/* Colored top borders */
+.insight-card.strengths,
+.results-card.strengths {
+  border-top: 4px solid #22c55e !important;
+}
+
+.insight-card.fixes,
+.results-card.fixes {
+  border-top: 4px solid #f59e0b !important;
+}
+
+.insight-card.skills,
+.results-card.skills {
+  border-top: 4px solid #a855f7 !important;
+}
+
+.insight-card.actions,
+.results-card.actions {
+  border-top: 4px solid #3b82f6 !important;
+}
+
+
+/* =========================================================
+   CARD HEADERS
+   ========================================================= */
+
+.insight-header,
+.results-card-header,
+.analysis-card-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin-bottom: 22px !important;
+}
+
+.insight-icon,
+.results-icon,
+.analysis-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 15px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 21px !important;
+  flex-shrink: 0 !important;
+}
+
+.strengths .insight-icon,
+.strengths .results-icon {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.fixes .insight-icon,
+.fixes .results-icon {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.skills .insight-icon,
+.skills .results-icon {
+  background: #f3e8ff !important;
+  color: #9333ea !important;
+}
+
+.actions .insight-icon,
+.actions .results-icon {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+
+/* Titles */
+.insight-header h3,
+.results-card-header h3,
+.analysis-card-header h3 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.insight-header p,
+.results-card-header p,
+.analysis-card-header p {
+  margin: 5px 0 0 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: #64748b !important;
+}
+
+
+/* =========================================================
+   LISTS
+   ========================================================= */
+
+.insight-list,
+.results-list,
+.analysis-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.insight-item,
+.results-item,
+.analysis-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding: 13px 15px !important;
+  margin: 0 !important;
+  border-radius: 13px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   STRENGTHS
+   ========================================================= */
+
+.strength-item,
+.strengths .insight-item {
+  background: #f0fdf4 !important;
+  color: #334155 !important;
+  border: 1px solid #dcfce7 !important;
+}
+
+.strength-check,
+.strengths .check-icon {
+  width: 21px !important;
+  height: 21px !important;
+  min-width: 21px !important;
+  border-radius: 50% !important;
+  background: #22c55e !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+  margin-top: 1px !important;
+}
+
+
+/* =========================================================
+   AREAS TO FIX
+   ========================================================= */
+
+.fix-item,
+.fixes .insight-item {
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+}
+
+.fix-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.fix-title {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 4px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}
+
+.fix-description {
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+
+/* Priority badges */
+.priority {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.priority.high {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.priority.medium {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.priority.low {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+
+/* =========================================================
+   MISSING SKILLS
+   ========================================================= */
+
+.skill-tags,
+.missing-skills,
+.skills-list {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.skill-tag,
+.skill-badge,
+.missing-skill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 9px 13px !important;
+  border-radius: 999px !important;
+  border: 1px solid #e9d5ff !important;
+  background: #faf5ff !important;
+  color: #7e22ce !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.skill-tag::before,
+.missing-skill::before {
+  content: "+" !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.skills-note {
+  margin-top: 18px !important;
+  padding: 13px 15px !important;
+  border-radius: 12px !important;
+  background: #faf5ff !important;
+  border: 1px solid #f3e8ff !important;
+  color: #6b21a8 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   ACTIONABLE SUGGESTIONS
+   ========================================================= */
+
+.action-list,
+.suggestions-list,
+.actions-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 11px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.action-item,
+.suggestion-item,
+.actions .insight-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+  padding: 13px 15px !important;
+  margin: 0 !important;
+  border-radius: 13px !important;
+  background: #eff6ff !important;
+  border: 1px solid #dbeafe !important;
+  color: #334155 !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.action-number {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  border-radius: 9px !important;
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+}
+
+.action-text {
+  color: #334155 !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+.insight-empty,
+.empty-state {
+  padding: 20px !important;
+  border-radius: 13px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+}
+
+
+/* =========================================================
+   REMOVE OLD EXCESSIVE HEIGHTS
+   This fixes the large empty white spaces visible
+   in your screenshot.
+========================================================= */
+
+.strengths,
+.fixes,
+.skills,
+.actions {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.strengths .card-content,
+.fixes .card-content,
+.skills .card-content,
+.actions .card-content {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+
+/* =========================================================
+   PREVENT LONG CONTENT FROM BREAKING CARD
+========================================================= */
+
+.insight-card *,
+.results-card *,
+.analysis-card * {
+  box-sizing: border-box !important;
+}
+
+.insight-card p,
+.insight-card li,
+.results-card p,
+.results-card li,
+.analysis-card p,
+.analysis-card li {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .insights-grid,
+  .results-grid,
+  .analysis-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .insight-card,
+  .results-card,
+  .analysis-card {
+    padding: 21px !important;
+    border-radius: 18px !important;
+  }
+
+  .insight-header h3,
+  .results-card-header h3,
+  .analysis-card-header h3 {
+    font-size: 18px !important;
+  }
+
+  .insight-icon,
+  .results-icon,
+  .analysis-icon {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .insight-card,
+  .results-card,
+  .analysis-card {
+    padding: 18px !important;
+  }
+
+  .insight-item,
+  .results-item,
+  .analysis-item {
+    padding: 11px 12px !important;
+  }
+
+  .skill-tags,
+  .missing-skills,
+  .skills-list {
+    gap: 7px !important;
+  }
+
+  .skill-tag,
+  .skill-badge,
+  .missing-skill {
+    font-size: 12px !important;
+    padding: 8px 11px !important;
+  }
+
+  .action-item,
+  .suggestion-item {
+    padding: 11px 12px !important;
+  }
+}
