@@ -48,6 +48,132 @@
 
 
     /* =======================================================
+       MOBILE NAVIGATION
+       ======================================================= */
+
+    const menuBtn = $("menuBtn");
+    const mobileNav = $("mobileNav");
+
+
+    function setMobileMenu(open) {
+
+        if (!menuBtn || !mobileNav) return;
+
+        mobileNav.classList.toggle(
+            "open",
+            Boolean(open)
+        );
+
+        menuBtn.setAttribute(
+            "aria-expanded",
+            String(Boolean(open))
+        );
+
+        menuBtn.setAttribute(
+            "aria-label",
+            open
+                ? "Close navigation menu"
+                : "Open navigation menu"
+        );
+
+        const icon =
+            menuBtn.querySelector("i");
+
+        if (icon) {
+            icon.classList.toggle(
+                "fa-bars",
+                !open
+            );
+
+            icon.classList.toggle(
+                "fa-xmark",
+                Boolean(open)
+            );
+        }
+    }
+
+
+    if (menuBtn && mobileNav) {
+
+        menuBtn.addEventListener(
+            "click",
+            (event) => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const isOpen =
+                    mobileNav.classList.contains(
+                        "open"
+                    );
+
+                setMobileMenu(!isOpen);
+            }
+        );
+
+
+        mobileNav
+            .querySelectorAll("a")
+            .forEach(link => {
+
+                link.addEventListener(
+                    "click",
+                    () => {
+                        setMobileMenu(false);
+                    }
+                );
+            });
+
+
+        document.addEventListener(
+            "click",
+            (event) => {
+
+                if (
+                    !mobileNav.classList.contains(
+                        "open"
+                    )
+                ) {
+                    return;
+                }
+
+                if (
+                    !mobileNav.contains(event.target) &&
+                    !menuBtn.contains(event.target)
+                ) {
+                    setMobileMenu(false);
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            (event) => {
+
+                if (
+                    event.key === "Escape" &&
+                    mobileNav.classList.contains("open")
+                ) {
+                    setMobileMenu(false);
+                }
+            }
+        );
+
+
+        window.addEventListener(
+            "resize",
+            () => {
+
+                if (window.innerWidth > 760) {
+                    setMobileMenu(false);
+                }
+            }
+        );
+    }
+
+
+    /* =======================================================
        STATE
        ======================================================= */
 
