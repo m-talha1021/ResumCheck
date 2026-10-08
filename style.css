@@ -3628,3 +3628,43 @@ button[type="submit"] {
     }
 
 }
+
+/* =========================================================
+   MOBILE — COMPLETELY HIDE QUICK LINKS
+   ========================================================= */
+
+@media screen and (max-width: 768px) {
+
+    /* Hide the Quick Links column */
+    footer .quick-links,
+    footer .quick-links-section,
+    footer .footer-links,
+    footer .footer-column.quick-links,
+    footer [class*="quick-links"],
+    footer [id*="quick-links"] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Keep remaining footer content centered */
+    footer {
+        text-align: center !important;
+    }
+
+    footer .footer-content,
+    footer .footer-container,
+    footer .footer-inner,
+    footer .footer-bottom {
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+}
