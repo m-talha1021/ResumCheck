@@ -3569,3 +3569,62 @@ button[type="submit"] {
     }
 
 }
+
+/* =========================================================
+   MOBILE FOOTER FIX
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    /* Hide Quick Links section */
+    footer .quick-links,
+    footer .quick-links-section,
+    footer .footer-links,
+    footer .footer-column:has(h3),
+    footer h3:has(+ ul),
+    footer h3:has(+ div) {
+        display: none !important;
+    }
+
+    /* Footer layout */
+    footer {
+        text-align: center !important;
+    }
+
+    footer .footer-content,
+    footer .footer-bottom,
+    footer .footer-container,
+    footer .footer-inner {
+        text-align: center !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    /* Footer text */
+    footer p,
+    footer span,
+    footer .copyright,
+    footer .footer-text {
+        text-align: center !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+    }
+
+    /* Make copyright text slightly stronger */
+    footer .copyright {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Footer tagline */
+    footer p:last-child {
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    /* Give footer more breathing room */
+    footer {
+        padding: 20px 12px !important;
+    }
+
+}
