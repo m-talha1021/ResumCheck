@@ -3445,3 +3445,127 @@ button[type="submit"] {
         max-width: 100% !important;
     }
 }
+
+
+/* =========================================================
+   MOBILE — ABOUT ATS CARDS
+   2 SMALL CARDS PER ROW
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    /* About ATS card grid */
+    .about-ats .cards,
+    .about-ats .card-grid,
+    .about-ats .features-grid,
+    .about-ats .ats-cards,
+    .about-ats .about-cards,
+    .about-ats .features {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    /* Individual cards */
+    .about-ats .card,
+    .about-ats .feature-card,
+    .about-ats .ats-card,
+    .about-ats .about-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        padding: 14px !important;
+        margin: 0 !important;
+        border-radius: 18px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Card icons */
+    .about-ats .card-icon,
+    .about-ats .feature-icon,
+    .about-ats .icon {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        margin-bottom: 10px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Icon inside card */
+    .about-ats .card-icon svg,
+    .about-ats .feature-icon svg,
+    .about-ats .icon svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    /* Card headings */
+    .about-ats .card h3,
+    .about-ats .feature-card h3,
+    .about-ats .ats-card h3,
+    .about-ats .about-card h3 {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+        margin: 0 0 6px !important;
+    }
+
+    /* Card descriptions */
+    .about-ats .card p,
+    .about-ats .feature-card p,
+    .about-ats .ats-card p,
+    .about-ats .about-card p {
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+        margin: 0 !important;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+    .about-ats .cards,
+    .about-ats .card-grid,
+    .about-ats .features-grid,
+    .about-ats .ats-cards,
+    .about-ats .about-cards,
+    .about-ats .features {
+        gap: 8px !important;
+    }
+
+    .about-ats .card,
+    .about-ats .feature-card,
+    .about-ats .ats-card,
+    .about-ats .about-card {
+        padding: 12px !important;
+        border-radius: 16px !important;
+    }
+
+    .about-ats .card-icon,
+    .about-ats .feature-icon,
+    .about-ats .icon {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+    }
+
+    .about-ats .card h3,
+    .about-ats .feature-card h3,
+    .about-ats .ats-card h3,
+    .about-ats .about-card h3 {
+        font-size: 14px !important;
+    }
+
+    .about-ats .card p,
+    .about-ats .feature-card p,
+    .about-ats .ats-card p,
+    .about-ats .about-card p {
+        font-size: 10px !important;
+    }
+
+}
