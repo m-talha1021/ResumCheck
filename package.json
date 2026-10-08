@@ -15,6 +15,6 @@
   "dependencies": {
     "@google/genai": "^1.29.0",
     "mammoth": "^1.11.0",
-    "pdf-parse": "2.4.5"
+    "pdf-parse": "1.1.1"
   }
 }
