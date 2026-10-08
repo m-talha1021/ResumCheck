@@ -59,6 +59,14 @@
   const resetButton = $("#resetButton");
   const downloadButton = $("#downloadButton");
 
+  // Keep the native picker aligned with the formats shown in the UI.
+  if (fileInput) {
+    fileInput.setAttribute(
+      "accept",
+      ".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+    );
+  }
+
   function setLoading(isLoading) {
     if (!analyzeButton) return;
 
@@ -126,10 +134,6 @@
       String(file.type || "").toLowerCase();
 
     return (
-      type.includes("pdf") ||
-      type.includes("word") ||
-      type.includes("document") ||
-      type.includes("text") ||
       name.endsWith(".pdf") ||
       name.endsWith(".doc") ||
       name.endsWith(".docx") ||
@@ -237,34 +241,44 @@
 
     setInputMode("file");
 
-    const fileNameElement =
-      $("#fileName");
+    const fileNameElement = $("#fileName");
+    const fileSizeElement = $("#fileSize");
 
+    // Primary UI: dedicated filename element.
     if (fileNameElement) {
-      fileNameElement.textContent =
-        currentFileName;
+      fileNameElement.textContent = currentFileName;
+      fileNameElement.style.display = "inline";
     }
 
-    const fileSizeElement =
-      $("#fileSize");
-
+    // Primary UI: dedicated file-size element.
     if (fileSizeElement) {
-      const size =
-        Number(file.size || 0);
-
-      const kb =
-        Math.max(
-          1,
-          Math.round(size / 1024)
-        );
-
-      fileSizeElement.textContent =
-        `${kb} KB`;
+      const size = Number(file.size || 0);
+      const kb = Math.max(1, Math.round(size / 1024));
+      fileSizeElement.textContent = `${kb} KB`;
+      fileSizeElement.style.display = "inline";
     }
 
-    uploadZone?.classList.add(
-      "file-selected"
-    );
+    // Fallback for the existing UI if it only contains
+    // the text "No file selected" and has no #fileName.
+    if (!fileNameElement) {
+      const candidates = uploadZone
+        ? uploadZone.querySelectorAll("*")
+        : [];
+
+      candidates.forEach((element) => {
+        if (
+          element.children.length === 0 &&
+          element.textContent.trim() === "No file selected"
+        ) {
+          element.textContent = currentFileName;
+        }
+      });
+    }
+
+    uploadZone?.classList.add("file-selected", "has-file");
+
+    // Keep the selected file visible even while text extraction runs.
+    setText("#fileName", currentFileName);
   }
 
   function clearSelectedFile() {
@@ -276,7 +290,8 @@
     }
 
     uploadZone?.classList.remove(
-      "file-selected"
+      "file-selected",
+      "has-file"
     );
 
     setText("#fileName", "");
@@ -332,6 +347,12 @@
         "Unable to read the uploaded file."
       );
     }
+  }
+
+  // Make the upload area behave consistently even if the HTML
+  // does not already contain a dedicated #fileName element.
+  if (uploadZone) {
+    uploadZone.classList.remove("file-selected", "has-file");
   }
 
   /*
