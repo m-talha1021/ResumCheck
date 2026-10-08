@@ -52,12 +52,12 @@
     window.RESUMCHECK_API_URL ||
     "/api/analyze";
 
-  const uploadZone = $("#uploadZone");
+  const uploadZone = $("#uploadZone") || $("#dropzone");
   const fileInput = $("#fileInput");
   const resumeText = $("#resumeText");
-  const analyzeButton = $("#analyzeButton");
-  const resetButton = $("#resetButton");
-  const downloadButton = $("#downloadButton");
+  const analyzeButton = $("#analyzeButton") || $("#analyzeBtn");
+  const resetButton = $("#resetButton") || $("#newAnalysis");
+  const downloadButton = $("#downloadButton") || $("#downloadReport");
 
   // Keep the native picker aligned with the formats shown in the UI.
   if (fileInput) {
@@ -307,18 +307,28 @@
       ? `${Math.max(1, Math.round(size / 1024))} KB`
       : "";
 
-    ui.nameElement.textContent = message
-      ? `${fileName} — ${message}`
-      : fileName;
+    // The real HTML contains an icon inside #fileName.
+    // Preserve that icon and replace only the visible filename text.
+    let textNode = Array.from(ui.nameElement.childNodes)
+      .find(node => node.nodeType === Node.TEXT_NODE);
 
-    ui.sizeElement.textContent = sizeText;
+    if (!textNode) {
+      textNode = document.createTextNode("");
+      ui.nameElement.appendChild(textNode);
+    }
 
-    ui.nameElement.style.display = "inline";
-    ui.sizeElement.style.display = sizeText ? "inline" : "none";
+    textNode.nodeValue = " " + (
+      message ? `${fileName} — ${message}` : fileName
+    );
 
+    if (ui.sizeElement) {
+      ui.sizeElement.textContent = sizeText;
+      ui.sizeElement.style.display = sizeText ? "inline" : "none";
+    }
+
+    ui.nameElement.style.display = "inline-flex";
     uploadZone.classList.add("file-selected", "has-file");
-  }
-
+}
   function replaceNoFileSelectedText(fileName) {
     if (!uploadZone) return;
 
