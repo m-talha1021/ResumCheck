@@ -559,12 +559,17 @@
         resumeText.value = "";
       }
 
+      /*
+      Keep currentResumeText empty if browser-side extraction fails,
+      but KEEP selectedFile. The Analyze button now uploads the original
+      file directly to the backend, which can extract PDF/DOCX/TXT itself.
+      */
       currentResumeText = "";
       updateWidgetCounts();
 
-      alert(
-        error?.message ||
-        "The file was selected, but its text could not be extracted."
+      console.warn(
+        "Browser-side extraction failed; the original file will be sent to the server for extraction.",
+        error
       );
     }
   }
@@ -1104,44 +1109,76 @@
 
   async function analyzeResume(
     text,
-    fileName
+    fileName,
+    file
   ) {
-    const payload = {
-      text:
-        cleanText(text),
+    let response;
 
-      fileName:
-        fileName ||
-        currentFileName ||
-        "Pasted Resume"
-    };
+    /*
+    =====================================================
+    FILE UPLOAD
+    =====================================================
 
-    const response =
-      await fetch(
+    Send the ORIGINAL file to /api/analyze as multipart/form-data.
+    The backend already supports PDF, DOCX and TXT extraction.
+    This avoids relying on browser-side PDF.js/Mammoth for analysis.
+    */
+
+    if (file) {
+      const formData = new FormData();
+
+      formData.append(
+        "file",
+        file,
+        getFileName(file)
+      );
+
+      response = await fetch(
+        API_URL,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+    }
+
+    /*
+    =====================================================
+    PASTED TEXT
+    =====================================================
+    */
+
+    else {
+      const payload = {
+        text: cleanText(text),
+        fileName:
+          fileName ||
+          currentFileName ||
+          "Pasted Resume"
+      };
+
+      response = await fetch(
         API_URL,
         {
           method: "POST",
 
           headers: {
-            "Content-Type":
-              "application/json",
-
-            "Accept":
-              "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
 
-          body:
-            JSON.stringify(
-              payload
-            )
+          body: JSON.stringify(payload)
         }
       );
+    }
 
     let data = null;
 
     try {
-      data =
-        await response.json();
+      data = await response.json();
     } catch {
       data = null;
     }
@@ -1163,60 +1200,105 @@
     return data;
   }
 
+
   /*
   =======================================================
-  ANALYZE BUTTON
+  ANALYZE BUTTON / FORM
   =======================================================
   */
 
-  if (analyzeButton) {
+  const analyzeForm =
+    $("#analyzeForm");
+
+  async function startAnalysis(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    /*
+    If a file was selected, upload the ORIGINAL FILE.
+    Do not require currentResumeText to be populated.
+    The backend extracts the PDF/DOCX/TXT itself.
+    */
+
+    const file =
+      selectedFile ||
+      fileInput?.files?.[0] ||
+      null;
+
+    const text =
+      cleanText(
+        resumeText?.value ||
+        currentResumeText
+      );
+
+    if (!file && !text) {
+      alert(
+        "Please upload a resume or paste your resume text first."
+      );
+
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const analysis =
+        await analyzeResume(
+          text,
+          currentFileName ||
+          file?.name ||
+          selectedFile?.name ||
+          "Pasted Resume",
+          file
+        );
+
+      renderAnalysis(
+        analysis
+      );
+
+    } catch (error) {
+      console.error(
+        "Resume analysis error:",
+        error
+      );
+
+      alert(
+        error?.message ||
+        "Unable to analyze the resume."
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /*
+  The HTML uses:
+  <form id="analyzeForm">
+    <button id="analyzeBtn" type="submit">
+  </form>
+
+  Listen to the FORM submit so the browser never reloads the page.
+  */
+
+  if (analyzeForm) {
+    analyzeForm.addEventListener(
+      "submit",
+      startAnalysis
+    );
+  } else if (analyzeButton) {
+    /*
+    Fallback for pages that don't have #analyzeForm.
+    */
+
     analyzeButton.addEventListener(
       "click",
-      async () => {
-        const text =
-          cleanText(
-            resumeText?.value ||
-            currentResumeText
-          );
-
-        if (!text) {
-          alert(
-            "Please upload a resume or paste your resume text first."
-          );
-
-          return;
-        }
-
-        setLoading(true);
-
-        try {
-          const analysis =
-            await analyzeResume(
-              text,
-              currentFileName ||
-              selectedFile?.name ||
-              "Pasted Resume"
-            );
-
-          renderAnalysis(
-            analysis
-          );
-        } catch (error) {
-          console.error(
-            "Resume analysis error:",
-            error
-          );
-
-          alert(
-            error?.message ||
-            "Unable to analyze the resume."
-          );
-        } finally {
-          setLoading(false);
-        }
-      }
+      startAnalysis
     );
   }
+
 
   /*
   =======================================================
