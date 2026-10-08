@@ -89,15 +89,20 @@ function getGeminiModels() {
     process.env.GEMINI_MODEL || ""
   ).trim();
 
-  return [
-    ...configuredModels,
-    ...(legacyModel ? [legacyModel] : []),
-    ...DEFAULT_GEMINI_MODELS,
-  ].filter(
-    (model, index, array) =>
-      model &&
-      array.indexOf(model) === index
-  );
+  /*
+   * If the deployment explicitly configured models, respect them.
+   * Otherwise use ONE current fast model. Trying four models in
+   * sequence can make a serverless request look like it is frozen.
+   */
+  if (configuredModels.length) {
+    return configuredModels;
+  }
+
+  if (legacyModel) {
+    return [legacyModel];
+  }
+
+  return ["gemini-2.5-flash"];
 }
 
 
@@ -1438,6 +1443,34 @@ ${resumeText}
 
 /*
 =========================================================
+TIMEOUT HELPER
+=========================================================
+*/
+
+function withTimeout(promise, milliseconds, label) {
+  let timer;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new Error(
+          `${label} timed out after ${milliseconds / 1000}s.`
+        )
+      );
+    }, milliseconds);
+  });
+
+  return Promise.race([
+    promise,
+    timeoutPromise,
+  ]).finally(() => {
+    clearTimeout(timer);
+  });
+}
+
+
+/*
+=========================================================
 RUN GEMINI WITH AUTOMATIC FALLBACK
 =========================================================
 */
@@ -1916,8 +1949,12 @@ async function handler(
       if (uploadedFile) {
         try {
           const extracted =
-            await extractResumeFromFile(
-              uploadedFile
+            await withTimeout(
+              extractResumeFromFile(
+                uploadedFile
+              ),
+              12000,
+              "Resume file extraction"
             );
 
           resumeText =
@@ -2013,13 +2050,21 @@ async function handler(
     let geminiData = {};
 
     try {
+      /*
+       * Never let Gemini make the Analyze button hang.
+       * If Gemini is unavailable, slow, rate-limited, or the
+       * selected model is invalid, return the deterministic
+       * local analysis instead.
+       */
       geminiData =
-        await runGemini(
-          resumeText
+        await withTimeout(
+          runGemini(resumeText),
+          12000,
+          "Gemini analysis"
         );
     } catch (error) {
       console.warn(
-        "Gemini failed. Local fallback will be used:",
+        "Gemini failed or timed out. Local fallback will be used:",
         error?.message || error
       );
 
