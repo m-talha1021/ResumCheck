@@ -3359,3 +3359,89 @@ button[type="submit"] {
         line-height: 1.55 !important;
     }
 }
+
+
+/* =========================================================
+   MOBILE — COMPACT FEATURE CARDS
+   2 CARDS PER ROW
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    /* 2 cards per row */
+    .features-grid,
+    .feature-grid,
+    .feature-cards,
+    .features {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+
+    /* Compact cards */
+    .feature-card,
+    .feature {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+
+        padding: 16px 14px !important;
+
+        border-radius: 20px !important;
+    }
+
+
+    /* Smaller icons */
+    .feature-card .icon,
+    .feature .icon,
+    .feature-card .feature-icon,
+    .feature .feature-icon {
+        width: 42px !important;
+        height: 42px !important;
+
+        min-width: 42px !important;
+        min-height: 42px !important;
+
+        margin-bottom: 12px !important;
+    }
+
+
+    /* Smaller icon itself */
+    .feature-card .icon svg,
+    .feature .icon svg,
+    .feature-card .feature-icon svg,
+    .feature .feature-icon svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+
+    /* Smaller card titles */
+    .feature-card h3,
+    .feature h3 {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+
+        margin-top: 0 !important;
+        margin-bottom: 7px !important;
+    }
+
+
+    /* Smaller descriptions */
+    .feature-card p,
+    .feature p {
+        font-size: 11px !important;
+        line-height: 1.45 !important;
+
+        margin: 0 !important;
+    }
+
+
+    /* Prevent long text from making cards unnecessarily wide */
+    .feature-card *,
+    .feature * {
+        max-width: 100% !important;
+    }
+}
