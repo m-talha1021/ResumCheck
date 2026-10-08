@@ -114,6 +114,114 @@
     );
   }
 
+
+  /* =======================================================
+     THIRD-PARTY DOCUMENT READERS
+     The HTML currently loads jsPDF only. Load PDF.js and
+     Mammoth automatically when they are actually needed.
+     ======================================================= */
+
+  const externalScriptPromises = {};
+
+  function loadExternalScript(src, globalName) {
+    if (window[globalName]) {
+      return Promise.resolve(window[globalName]);
+    }
+
+    if (externalScriptPromises[src]) {
+      return externalScriptPromises[src];
+    }
+
+    externalScriptPromises[src] = new Promise((resolve, reject) => {
+      const existing = document.querySelector(
+        `script[data-resumcheck-src="${src}"]`
+      );
+
+      if (existing) {
+        existing.addEventListener("load", () => {
+          if (window[globalName]) {
+            resolve(window[globalName]);
+          } else {
+            reject(new Error(`${globalName} failed to initialize.`));
+          }
+        }, { once: true });
+
+        existing.addEventListener("error", () => {
+          reject(new Error(`Could not load ${globalName}.`));
+        }, { once: true });
+
+        return;
+      }
+
+      const script = document.createElement("script");
+
+      script.src = src;
+      script.async = true;
+      script.dataset.resumcheckSrc = src;
+
+      script.onload = () => {
+        if (window[globalName]) {
+          resolve(window[globalName]);
+        } else {
+          reject(new Error(`${globalName} failed to initialize.`));
+        }
+      };
+
+      script.onerror = () => {
+        reject(
+          new Error(
+            `Could not load the document reader (${globalName}). ` +
+            `Please check your internet connection or CDN access.`
+          )
+        );
+      };
+
+      document.head.appendChild(script);
+    });
+
+    return externalScriptPromises[src];
+  }
+
+  async function ensurePdfJsLoaded() {
+    if (window.pdfjsLib) {
+      if (
+        window.pdfjsLib.GlobalWorkerOptions &&
+        !window.pdfjsLib.GlobalWorkerOptions.workerSrc
+      ) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+
+      return window.pdfjsLib;
+    }
+
+    const pdfjs = await loadExternalScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+      "pdfjsLib"
+    );
+
+    if (
+      pdfjs &&
+      pdfjs.GlobalWorkerOptions
+    ) {
+      pdfjs.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+
+    return pdfjs;
+  }
+
+  async function ensureMammothLoaded() {
+    if (window.mammoth) {
+      return window.mammoth;
+    }
+
+    return loadExternalScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js",
+      "mammoth"
+    );
+  }
+
   function getFileName(file) {
     if (!file) return "";
 
@@ -152,7 +260,13 @@
       getFileName(file).toLowerCase();
 
     if (name.endsWith(".txt")) {
-      return cleanText(await file.text());
+      const text = cleanText(await file.text());
+
+      if (!text) {
+        throw new Error("The TXT file is empty.");
+      }
+
+      return text;
     }
 
     if (name.endsWith(".pdf")) {
@@ -173,21 +287,15 @@
   }
 
   async function extractPdfText(file) {
-    if (!window.pdfjsLib) {
-      throw new Error(
-        "PDF reader is not loaded. Add PDF.js to the page before script.js."
-      );
-    }
+    const pdfjsLib = await ensurePdfJsLoaded();
 
-    const buffer =
-      await file.arrayBuffer();
+    const buffer = await file.arrayBuffer();
 
-    const pdf =
-      await window.pdfjsLib
-        .getDocument({
-          data: buffer
-        })
-        .promise;
+    const pdf = await pdfjsLib
+      .getDocument({
+        data: buffer
+      })
+      .promise;
 
     let output = "";
 
@@ -196,41 +304,49 @@
       pageNumber <= pdf.numPages;
       pageNumber++
     ) {
-      const page =
-        await pdf.getPage(pageNumber);
+      const page = await pdf.getPage(pageNumber);
 
-      const content =
-        await page.getTextContent();
+      const content = await page.getTextContent();
 
-      const pageText =
-        content.items
-          .map((item) => item.str || "")
-          .join(" ");
+      const pageText = content.items
+        .map((item) => item.str || "")
+        .join(" ");
 
       output += pageText + "\n";
     }
 
-    return cleanText(output);
-  }
+    const text = cleanText(output);
 
-  async function extractDocxText(file) {
-    if (!window.mammoth) {
+    if (!text) {
       throw new Error(
-        "DOCX reader is not loaded. Add Mammoth.js to the page before script.js."
+        "The PDF was opened, but no selectable text was found. " +
+        "If this is a scanned/image-only resume, please upload a text-based PDF or DOCX."
       );
     }
 
-    const buffer =
-      await file.arrayBuffer();
+    return text;
+  }
 
-    const result =
-      await window.mammoth.extractRawText({
-        arrayBuffer: buffer
-      });
+  async function extractDocxText(file) {
+    const mammoth = await ensureMammothLoaded();
 
-    return cleanText(
+    const buffer = await file.arrayBuffer();
+
+    const result = await mammoth.extractRawText({
+      arrayBuffer: buffer
+    });
+
+    const text = cleanText(
       result?.value || ""
     );
+
+    if (!text) {
+      throw new Error(
+        "The DOCX file was opened, but no readable text was found."
+      );
+    }
+
+    return text;
   }
 
   function ensureFileStatusUI() {
