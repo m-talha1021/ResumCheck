@@ -233,6 +233,115 @@
     );
   }
 
+  function ensureFileStatusUI() {
+    if (!uploadZone) return null;
+
+    let nameElement = $("#fileName");
+    let sizeElement = $("#fileSize");
+
+    // If the HTML already has the expected elements, use them.
+    if (nameElement) {
+      return { nameElement, sizeElement };
+    }
+
+    // Otherwise create a status area automatically. This makes the
+    // upload work even if the HTML only contains "No file selected".
+    let status = uploadZone.querySelector(".selected-file");
+
+    if (!status) {
+      status = document.createElement("div");
+      status.className = "selected-file";
+      status.style.display = "inline-flex";
+      status.style.alignItems = "center";
+      status.style.gap = "8px";
+      status.style.marginTop = "18px";
+      status.style.padding = "10px 16px";
+      status.style.borderRadius = "999px";
+      status.style.border = "1px solid rgba(100,150,255,.3)";
+      status.style.background = "rgba(30,55,110,.35)";
+      status.style.color = "#b8ceff";
+      status.style.fontSize = "14px";
+      status.style.fontWeight = "600";
+
+      nameElement = document.createElement("span");
+      nameElement.id = "fileName";
+      nameElement.className = "file-name";
+
+      sizeElement = document.createElement("span");
+      sizeElement.id = "fileSize";
+      sizeElement.className = "file-size";
+      sizeElement.style.opacity = ".7";
+
+      status.appendChild(nameElement);
+      status.appendChild(sizeElement);
+      uploadZone.appendChild(status);
+    } else {
+      nameElement = status.querySelector("#fileName, .file-name");
+      sizeElement = status.querySelector("#fileSize, .file-size");
+
+      if (!nameElement) {
+        nameElement = document.createElement("span");
+        nameElement.id = "fileName";
+        status.prepend(nameElement);
+      }
+
+      if (!sizeElement) {
+        sizeElement = document.createElement("span");
+        sizeElement.id = "fileSize";
+        status.appendChild(sizeElement);
+      }
+    }
+
+    return { nameElement, sizeElement };
+  }
+
+  function updateFileStatus(file, message = "") {
+    if (!file || !uploadZone) return;
+
+    const ui = ensureFileStatusUI();
+    if (!ui) return;
+
+    const fileName = getFileName(file);
+    const size = Number(file.size || 0);
+    const sizeText = size
+      ? `${Math.max(1, Math.round(size / 1024))} KB`
+      : "";
+
+    ui.nameElement.textContent = message
+      ? `${fileName} — ${message}`
+      : fileName;
+
+    ui.sizeElement.textContent = sizeText;
+
+    ui.nameElement.style.display = "inline";
+    ui.sizeElement.style.display = sizeText ? "inline" : "none";
+
+    uploadZone.classList.add("file-selected", "has-file");
+  }
+
+  function replaceNoFileSelectedText(fileName) {
+    if (!uploadZone) return;
+
+    // Replace the exact visible text wherever it exists in the upload area.
+    const walker = document.createTreeWalker(
+      uploadZone,
+      NodeFilter.SHOW_TEXT
+    );
+
+    const nodes = [];
+    let node;
+
+    while ((node = walker.nextNode())) {
+      nodes.push(node);
+    }
+
+    nodes.forEach((textNode) => {
+      if (textNode.nodeValue.trim() === "No file selected") {
+        textNode.nodeValue = fileName;
+      }
+    });
+  }
+
   function showSelectedFile(file) {
     if (!file) return;
 
@@ -241,44 +350,12 @@
 
     setInputMode("file");
 
-    const fileNameElement = $("#fileName");
-    const fileSizeElement = $("#fileSize");
+    // IMPORTANT: update the visible UI BEFORE attempting PDF/DOCX parsing.
+    // Therefore the selected file remains visible even if text extraction fails.
+    updateFileStatus(file);
+    replaceNoFileSelectedText(currentFileName);
 
-    // Primary UI: dedicated filename element.
-    if (fileNameElement) {
-      fileNameElement.textContent = currentFileName;
-      fileNameElement.style.display = "inline";
-    }
-
-    // Primary UI: dedicated file-size element.
-    if (fileSizeElement) {
-      const size = Number(file.size || 0);
-      const kb = Math.max(1, Math.round(size / 1024));
-      fileSizeElement.textContent = `${kb} KB`;
-      fileSizeElement.style.display = "inline";
-    }
-
-    // Fallback for the existing UI if it only contains
-    // the text "No file selected" and has no #fileName.
-    if (!fileNameElement) {
-      const candidates = uploadZone
-        ? uploadZone.querySelectorAll("*")
-        : [];
-
-      candidates.forEach((element) => {
-        if (
-          element.children.length === 0 &&
-          element.textContent.trim() === "No file selected"
-        ) {
-          element.textContent = currentFileName;
-        }
-      });
-    }
-
-    uploadZone?.classList.add("file-selected", "has-file");
-
-    // Keep the selected file visible even while text extraction runs.
-    setText("#fileName", currentFileName);
+    console.log("ResumCheck: selected file =", currentFileName);
   }
 
   function clearSelectedFile() {
@@ -294,8 +371,16 @@
       "has-file"
     );
 
-    setText("#fileName", "");
-    setText("#fileSize", "");
+    const fileNameElement = $("#fileName");
+    const fileSizeElement = $("#fileSize");
+
+    if (fileNameElement) {
+      fileNameElement.textContent = "No file selected";
+    }
+
+    if (fileSizeElement) {
+      fileSizeElement.textContent = "";
+    }
   }
 
   async function handleSelectedFile(file) {
@@ -305,46 +390,55 @@
       alert(
         "Please upload a PDF, DOCX, or TXT resume."
       );
-
-      clearSelectedFile();
       return;
     }
 
+    // Show the file immediately. Do NOT wait for parsing.
     showSelectedFile(file);
 
     try {
-      const text =
-        await readFileAsText(file);
+      const text = await readFileAsText(file);
 
-      currentResumeText =
-        cleanText(text);
+      currentResumeText = cleanText(text);
 
       if (resumeText) {
-        resumeText.value =
-          currentResumeText;
+        resumeText.value = currentResumeText;
       }
 
       updateWidgetCounts();
-
-      /*
-      This makes the uploaded file visibly usable
-      immediately. The Analyze button sends the
-      extracted text to the API.
-      */
-
       setInputMode("file");
+
+      // Keep the selected filename visible after successful extraction.
+      updateFileStatus(file);
+
+      console.log(
+        "ResumCheck: resume text extracted successfully. Characters =",
+        currentResumeText.length
+      );
 
     } catch (error) {
       console.error(
-        "Resume file reading error:",
+        "ResumCheck: resume file reading error:",
         error
       );
 
-      clearSelectedFile();
+      // IMPORTANT: do NOT clear the selected filename here.
+      // The user should still see the file they selected.
+      updateFileStatus(
+        file,
+        "selected"
+      );
+
+      if (resumeText) {
+        resumeText.value = "";
+      }
+
+      currentResumeText = "";
+      updateWidgetCounts();
 
       alert(
         error?.message ||
-        "Unable to read the uploaded file."
+        "The file was selected, but its text could not be extracted."
       );
     }
   }
