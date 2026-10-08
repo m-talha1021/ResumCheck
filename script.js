@@ -1,39 +1,53 @@
-/* =========================================================
-   RESUMCHECK — UPDATED FRONTEND SCRIPT
-   ========================================================= */
+/**
+ * ResumCheck frontend
+ * Complete upload + analysis + results + report script.
+ */
 
 (() => {
   "use strict";
 
   let currentAnalysis = null;
+  let selectedFile = null;
   let currentResumeText = "";
   let currentFileName = "";
-  let selectedFile = null;
 
   const $ = (selector) =>
     document.querySelector(selector);
 
-  const $$ = (selector) =>
-    Array.from(document.querySelectorAll(selector));
+  const API_URL =
+    window.RESUMCHECK_API_URL ||
+    "/api/analyze";
 
-  function setText(selector, value) {
-    const element = $(selector);
-    if (!element) return;
+  const uploadZone =
+    $("#dropzone");
 
-    element.textContent =
-      value === undefined || value === null
-        ? ""
-        : String(value);
-  }
+  const fileInput =
+    $("#fileInput");
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+  const resumeText =
+    $("#resumeText");
+
+  const analyzeForm =
+    $("#analyzeForm");
+
+  const analyzeButton =
+    $("#analyzeBtn");
+
+  const resultSection =
+    $("#resultSection");
+
+  const loadingOverlay =
+    $("#loadingOverlay");
+
+  const loadingStep =
+    $("#loadingStep");
+
+  const errorMsg =
+    $("#errorMsg");
+
+  /* =======================================================
+     TEXT HELPERS
+     ======================================================= */
 
   function cleanText(value) {
     return String(value ?? "")
@@ -48,662 +62,322 @@
       .trim();
   }
 
-  const API_URL =
-    window.RESUMCHECK_API_URL ||
-    "/api/analyze";
-
-  const uploadZone = $("#uploadZone") || $("#dropzone");
-  const fileInput = $("#fileInput");
-  const resumeText = $("#resumeText");
-  const analyzeButton = $("#analyzeButton") || $("#analyzeBtn");
-  const resetButton = $("#resetButton") || $("#newAnalysis");
-  const downloadButton = $("#downloadButton") || $("#downloadReport");
-
-  // Keep the native picker aligned with the formats shown in the UI.
-  if (fileInput) {
-    fileInput.setAttribute(
-      "accept",
-      ".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-    );
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
   }
-
-  function setLoading(isLoading) {
-    if (!analyzeButton) return;
-
-    analyzeButton.disabled = Boolean(isLoading);
-
-    if (isLoading) {
-      if (!analyzeButton.dataset.originalText) {
-        analyzeButton.dataset.originalText =
-          analyzeButton.textContent;
-      }
-
-      analyzeButton.textContent = "Analyzing...";
-    } else {
-      analyzeButton.textContent =
-        analyzeButton.dataset.originalText ||
-        "Analyze Resume";
-
-      delete analyzeButton.dataset.originalText;
-    }
-  }
-
-  function setInputMode(mode) {
-    document.body.dataset.inputMode = mode || "";
-  }
-
-  function updateWidgetCounts() {
-    const text =
-      cleanText(resumeText?.value || "");
-
-    const words =
-      text
-        ? text.split(/\s+/).filter(Boolean).length
-        : 0;
-
-    const chars = text.length;
-
-    setText(
-      "#wordCount",
-      `${words} words`
-    );
-
-    setText(
-      "#charCount",
-      `${chars} characters`
-    );
-  }
-
 
   /* =======================================================
-     THIRD-PARTY DOCUMENT READERS
-     The HTML currently loads jsPDF only. Load PDF.js and
-     Mammoth automatically when they are actually needed.
+     ERROR / LOADING
      ======================================================= */
 
-  const externalScriptPromises = {};
-
-  function loadExternalScript(src, globalName) {
-    if (window[globalName]) {
-      return Promise.resolve(window[globalName]);
-    }
-
-    if (externalScriptPromises[src]) {
-      return externalScriptPromises[src];
-    }
-
-    externalScriptPromises[src] = new Promise((resolve, reject) => {
-      const existing = document.querySelector(
-        `script[data-resumcheck-src="${src}"]`
+  function showError(message) {
+    const text =
+      String(
+        message ||
+          "Something went wrong."
       );
 
-      if (existing) {
-        existing.addEventListener("load", () => {
-          if (window[globalName]) {
-            resolve(window[globalName]);
-          } else {
-            reject(new Error(`${globalName} failed to initialize.`));
-          }
-        }, { once: true });
+    if (errorMsg) {
+      errorMsg.textContent =
+        text;
 
-        existing.addEventListener("error", () => {
-          reject(new Error(`Could not load ${globalName}.`));
-        }, { once: true });
+      errorMsg.classList.remove(
+        "hidden"
+      );
 
-        return;
-      }
+      errorMsg.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else {
+      alert(text);
+    }
+  }
 
-      const script = document.createElement("script");
+  function clearError() {
+    if (!errorMsg) {
+      return;
+    }
 
-      script.src = src;
-      script.async = true;
-      script.dataset.resumcheckSrc = src;
+    errorMsg.textContent =
+      "";
 
-      script.onload = () => {
-        if (window[globalName]) {
-          resolve(window[globalName]);
-        } else {
-          reject(new Error(`${globalName} failed to initialize.`));
-        }
-      };
+    errorMsg.classList.add(
+      "hidden"
+    );
+  }
 
-      script.onerror = () => {
-        reject(
-          new Error(
-            `Could not load the document reader (${globalName}). ` +
-            `Please check your internet connection or CDN access.`
-          )
+  function setLoading(
+    isLoading
+  ) {
+    if (analyzeButton) {
+      analyzeButton.disabled =
+        Boolean(isLoading);
+
+      const label =
+        analyzeButton.querySelector(
+          "span"
         );
-      };
 
-      document.head.appendChild(script);
-    });
-
-    return externalScriptPromises[src];
-  }
-
-  async function ensurePdfJsLoaded() {
-    if (window.pdfjsLib) {
-      if (
-        window.pdfjsLib.GlobalWorkerOptions &&
-        !window.pdfjsLib.GlobalWorkerOptions.workerSrc
-      ) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      if (label) {
+        label.textContent =
+          isLoading
+            ? "Analyzing..."
+            : "Analyze My Resume";
       }
-
-      return window.pdfjsLib;
     }
 
-    const pdfjs = await loadExternalScript(
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-      "pdfjsLib"
-    );
-
-    if (
-      pdfjs &&
-      pdfjs.GlobalWorkerOptions
-    ) {
-      pdfjs.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    if (loadingOverlay) {
+      loadingOverlay.classList.toggle(
+        "hidden",
+        !isLoading
+      );
     }
-
-    return pdfjs;
   }
 
-  async function ensureMammothLoaded() {
-    if (window.mammoth) {
-      return window.mammoth;
+  function setLoadingStep(
+    text
+  ) {
+    if (loadingStep) {
+      loadingStep.textContent =
+        text;
     }
-
-    return loadExternalScript(
-      "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js",
-      "mammoth"
-    );
   }
 
-  function getFileName(file) {
-    if (!file) return "";
+  /* =======================================================
+     FILE VALIDATION
+     ======================================================= */
 
-    return (
-      file.name ||
-      file.originalFilename ||
-      "resume"
-    );
-  }
-
-  function isSupportedFile(file) {
-    if (!file) return false;
+  function isSupportedFile(
+    file
+  ) {
+    if (!file) {
+      return false;
+    }
 
     const name =
-      getFileName(file).toLowerCase();
-
-    const type =
-      String(file.type || "").toLowerCase();
+      String(
+        file.name || ""
+      ).toLowerCase();
 
     return (
       name.endsWith(".pdf") ||
-      name.endsWith(".doc") ||
       name.endsWith(".docx") ||
       name.endsWith(".txt")
     );
   }
 
-  async function readFileAsText(file) {
+  /* =======================================================
+     FILE UI
+     ======================================================= */
+
+  function updateSelectedFileUI(
+    file
+  ) {
     if (!file) {
-      throw new Error(
-        "No file selected."
-      );
-    }
-
-    const name =
-      getFileName(file).toLowerCase();
-
-    if (name.endsWith(".txt")) {
-      const text = cleanText(await file.text());
-
-      if (!text) {
-        throw new Error("The TXT file is empty.");
-      }
-
-      return text;
-    }
-
-    if (name.endsWith(".pdf")) {
-      return extractPdfText(file);
-    }
-
-    if (name.endsWith(".docx")) {
-      return extractDocxText(file);
-    }
-
-    if (name.endsWith(".doc")) {
-      throw new Error(
-        "Old .doc files are not supported directly in the browser. Please save the resume as .docx, PDF, or TXT."
-      );
-    }
-
-    return cleanText(await file.text());
-  }
-
-  async function extractPdfText(file) {
-    const pdfjsLib = await ensurePdfJsLoaded();
-
-    const buffer = await file.arrayBuffer();
-
-    const pdf = await pdfjsLib
-      .getDocument({
-        data: buffer
-      })
-      .promise;
-
-    let output = "";
-
-    for (
-      let pageNumber = 1;
-      pageNumber <= pdf.numPages;
-      pageNumber++
-    ) {
-      const page = await pdf.getPage(pageNumber);
-
-      const content = await page.getTextContent();
-
-      const pageText = content.items
-        .map((item) => item.str || "")
-        .join(" ");
-
-      output += pageText + "\n";
-    }
-
-    const text = cleanText(output);
-
-    if (!text) {
-      throw new Error(
-        "The PDF was opened, but no selectable text was found. " +
-        "If this is a scanned/image-only resume, please upload a text-based PDF or DOCX."
-      );
-    }
-
-    return text;
-  }
-
-  async function extractDocxText(file) {
-    const mammoth = await ensureMammothLoaded();
-
-    const buffer = await file.arrayBuffer();
-
-    const result = await mammoth.extractRawText({
-      arrayBuffer: buffer
-    });
-
-    const text = cleanText(
-      result?.value || ""
-    );
-
-    if (!text) {
-      throw new Error(
-        "The DOCX file was opened, but no readable text was found."
-      );
-    }
-
-    return text;
-  }
-
-  function ensureFileStatusUI() {
-    if (!uploadZone) return null;
-
-    let nameElement = $("#fileName");
-    let sizeElement = $("#fileSize");
-
-    // If the HTML already has the expected elements, use them.
-    if (nameElement) {
-      return { nameElement, sizeElement };
-    }
-
-    // Otherwise create a status area automatically. This makes the
-    // upload work even if the HTML only contains "No file selected".
-    let status = uploadZone.querySelector(".selected-file");
-
-    if (!status) {
-      status = document.createElement("div");
-      status.className = "selected-file";
-      status.style.display = "inline-flex";
-      status.style.alignItems = "center";
-      status.style.gap = "8px";
-      status.style.marginTop = "18px";
-      status.style.padding = "10px 16px";
-      status.style.borderRadius = "999px";
-      status.style.border = "1px solid rgba(100,150,255,.3)";
-      status.style.background = "rgba(30,55,110,.35)";
-      status.style.color = "#b8ceff";
-      status.style.fontSize = "14px";
-      status.style.fontWeight = "600";
-
-      nameElement = document.createElement("span");
-      nameElement.id = "fileName";
-      nameElement.className = "file-name";
-
-      sizeElement = document.createElement("span");
-      sizeElement.id = "fileSize";
-      sizeElement.className = "file-size";
-      sizeElement.style.opacity = ".7";
-
-      status.appendChild(nameElement);
-      status.appendChild(sizeElement);
-      uploadZone.appendChild(status);
-    } else {
-      nameElement = status.querySelector("#fileName, .file-name");
-      sizeElement = status.querySelector("#fileSize, .file-size");
-
-      if (!nameElement) {
-        nameElement = document.createElement("span");
-        nameElement.id = "fileName";
-        status.prepend(nameElement);
-      }
-
-      if (!sizeElement) {
-        sizeElement = document.createElement("span");
-        sizeElement.id = "fileSize";
-        status.appendChild(sizeElement);
-      }
-    }
-
-    return { nameElement, sizeElement };
-  }
-
-  function updateFileStatus(file, message = "") {
-    if (!file || !uploadZone) return;
-
-    const ui = ensureFileStatusUI();
-    if (!ui) return;
-
-    const fileName = getFileName(file);
-    const size = Number(file.size || 0);
-    const sizeText = size
-      ? `${Math.max(1, Math.round(size / 1024))} KB`
-      : "";
-
-    // The real HTML contains an icon inside #fileName.
-    // Preserve that icon and replace only the visible filename text.
-    let textNode = Array.from(ui.nameElement.childNodes)
-      .find(node => node.nodeType === Node.TEXT_NODE);
-
-    if (!textNode) {
-      textNode = document.createTextNode("");
-      ui.nameElement.appendChild(textNode);
-    }
-
-    textNode.nodeValue = " " + (
-      message ? `${fileName} — ${message}` : fileName
-    );
-
-    if (ui.sizeElement) {
-      ui.sizeElement.textContent = sizeText;
-      ui.sizeElement.style.display = sizeText ? "inline" : "none";
-    }
-
-    ui.nameElement.style.display = "inline-flex";
-    uploadZone.classList.add("file-selected", "has-file");
-}
-  function replaceNoFileSelectedText(fileName) {
-    if (!uploadZone) return;
-
-    // Replace the exact visible text wherever it exists in the upload area.
-    const walker = document.createTreeWalker(
-      uploadZone,
-      NodeFilter.SHOW_TEXT
-    );
-
-    const nodes = [];
-    let node;
-
-    while ((node = walker.nextNode())) {
-      nodes.push(node);
-    }
-
-    nodes.forEach((textNode) => {
-      if (textNode.nodeValue.trim() === "No file selected") {
-        textNode.nodeValue = fileName;
-      }
-    });
-  }
-
-  function showSelectedFile(file) {
-    if (!file) return;
-
-    selectedFile = file;
-    currentFileName = getFileName(file);
-
-    setInputMode("file");
-
-    // IMPORTANT: update the visible UI BEFORE attempting PDF/DOCX parsing.
-    // Therefore the selected file remains visible even if text extraction fails.
-    updateFileStatus(file);
-    replaceNoFileSelectedText(currentFileName);
-
-    console.log("ResumCheck: selected file =", currentFileName);
-  }
-
-  function clearSelectedFile() {
-    selectedFile = null;
-    currentFileName = "";
-
-    if (fileInput) {
-      fileInput.value = "";
-    }
-
-    uploadZone?.classList.remove(
-      "file-selected",
-      "has-file"
-    );
-
-    const fileNameElement = $("#fileName");
-    const fileSizeElement = $("#fileSize");
-
-    if (fileNameElement) {
-      fileNameElement.textContent = "No file selected";
-    }
-
-    if (fileSizeElement) {
-      fileSizeElement.textContent = "";
-    }
-  }
-
-  async function handleSelectedFile(file) {
-    if (!file) return;
-
-    if (!isSupportedFile(file)) {
-      alert(
-        "Please upload a PDF, DOCX, or TXT resume."
-      );
       return;
     }
 
-    // Show the file immediately. Do NOT wait for parsing.
-    showSelectedFile(file);
+    const fileName =
+      $("#fileName");
 
-    try {
-      const text = await readFileAsText(file);
+    if (fileName) {
+      fileName.innerHTML =
+        `<i class="fa-regular fa-file"></i> ${escapeHtml(file.name)}`;
+    }
 
-      currentResumeText = cleanText(text);
-
-      if (resumeText) {
-        resumeText.value = currentResumeText;
-      }
-
-      updateWidgetCounts();
-      setInputMode("file");
-
-      // Keep the selected filename visible after successful extraction.
-      updateFileStatus(file);
-
-      console.log(
-        "ResumCheck: resume text extracted successfully. Characters =",
-        currentResumeText.length
-      );
-
-    } catch (error) {
-      console.error(
-        "ResumCheck: resume file reading error:",
-        error
-      );
-
-      // IMPORTANT: do NOT clear the selected filename here.
-      // The user should still see the file they selected.
-      updateFileStatus(
-        file,
-        "selected"
-      );
-
-      if (resumeText) {
-        resumeText.value = "";
-      }
-
-      /*
-      Keep currentResumeText empty if browser-side extraction fails,
-      but KEEP selectedFile. The Analyze button now uploads the original
-      file directly to the backend, which can extract PDF/DOCX/TXT itself.
-      */
-      currentResumeText = "";
-      updateWidgetCounts();
-
-      console.warn(
-        "Browser-side extraction failed; the original file will be sent to the server for extraction.",
-        error
+    if (uploadZone) {
+      uploadZone.classList.add(
+        "file-selected",
+        "has-file"
       );
     }
   }
 
-  // Make the upload area behave consistently even if the HTML
-  // does not already contain a dedicated #fileName element.
-  if (uploadZone) {
-    uploadZone.classList.remove("file-selected", "has-file");
+  function clearSelectedFile() {
+    selectedFile =
+      null;
+
+    currentFileName =
+      "";
+
+    currentResumeText =
+      "";
+
+    if (fileInput) {
+      fileInput.value =
+        "";
+    }
+
+    if (resumeText) {
+      resumeText.value =
+        "";
+    }
+
+    const fileName =
+      $("#fileName");
+
+    if (fileName) {
+      fileName.innerHTML =
+        `<i class="fa-regular fa-file"></i> No file selected`;
+    }
+
+    if (uploadZone) {
+      uploadZone.classList.remove(
+        "file-selected",
+        "has-file"
+      );
+    }
   }
 
-  /*
-  =======================================================
-  UPLOAD EVENTS
-  =======================================================
-  */
+  /* =======================================================
+     SELECT FILE
+     ======================================================= */
 
-  if (uploadZone && fileInput) {
-    /*
-    Prevent duplicate click handlers and ensure that
-    clicking ANYWHERE in the upload zone opens the
-    native file picker.
-    */
+  function selectFile(file) {
+    if (!file) {
+      return;
+    }
 
-    uploadZone.addEventListener(
-      "click",
-      (event) => {
-        if (
-          event.target === fileInput ||
-          event.target.closest(
-            "button, a, input, label"
-          )
-        ) {
-          return;
-        }
+    clearError();
 
-        event.preventDefault();
-        event.stopPropagation();
+    if (
+      !isSupportedFile(
+        file
+      )
+    ) {
+      showError(
+        "Please upload a PDF, DOCX, or TXT resume."
+      );
 
-        fileInput.click();
-      }
+      return;
+    }
+
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      showError(
+        "Resume file is too large. Maximum allowed size is 5 MB."
+      );
+
+      return;
+    }
+
+    selectedFile =
+      file;
+
+    currentFileName =
+      file.name;
+
+    updateSelectedFileUI(
+      file
     );
 
+    console.log(
+      "ResumCheck: file selected:",
+      file.name
+    );
+  }
+
+  /* =======================================================
+     FILE INPUT
+     ======================================================= */
+
+  if (fileInput) {
+    fileInput.addEventListener(
+      "change",
+      () => {
+        selectFile(
+          fileInput.files?.[0]
+        );
+      }
+    );
+  }
+
+  /* =======================================================
+     DROPZONE
+     ======================================================= */
+
+  if (uploadZone) {
     uploadZone.addEventListener(
       "keydown",
       (event) => {
         if (
-          event.key === "Enter" ||
-          event.key === " "
+          event.key ===
+            "Enter" ||
+          event.key ===
+            " "
         ) {
           event.preventDefault();
-          fileInput.click();
+
+          if (fileInput) {
+            fileInput.click();
+          }
         }
       }
-    );
-
-    uploadZone.setAttribute(
-      "tabindex",
-      "0"
     );
 
     uploadZone.addEventListener(
       "dragover",
       (event) => {
         event.preventDefault();
-        event.stopPropagation();
 
         uploadZone.classList.add(
           "dragging"
         );
-
-        if (
-          event.dataTransfer
-        ) {
-          event.dataTransfer.dropEffect =
-            "copy";
-        }
       }
     );
 
     uploadZone.addEventListener(
       "dragleave",
-      (event) => {
-        if (
-          event.target === uploadZone
-        ) {
-          uploadZone.classList.remove(
-            "dragging"
-          );
-        }
+      () => {
+        uploadZone.classList.remove(
+          "dragging"
+        );
       }
     );
 
     uploadZone.addEventListener(
       "drop",
-      async (event) => {
+      (event) => {
         event.preventDefault();
-        event.stopPropagation();
 
         uploadZone.classList.remove(
           "dragging"
         );
 
-        const file =
-          event.dataTransfer?.files?.[0];
-
-        if (file) {
-          await handleSelectedFile(file);
-        }
-      }
-    );
-
-    fileInput.addEventListener(
-      "click",
-      (event) => {
-        event.stopPropagation();
-      }
-    );
-
-    fileInput.addEventListener(
-      "change",
-      async (event) => {
-        const file =
-          event.target.files?.[0];
-
-        await handleSelectedFile(file);
+        selectFile(
+          event.dataTransfer
+            ?.files?.[0]
+        );
       }
     );
   }
 
-  /*
-  =======================================================
-  TEXT INPUT
-  =======================================================
-  */
+  /* =======================================================
+     TEXT INPUT
+     ======================================================= */
 
   if (resumeText) {
     resumeText.addEventListener(
@@ -714,480 +388,159 @@
             resumeText.value
           );
 
-        if (currentResumeText) {
-          setInputMode("text");
-        }
+        /*
+         * If the user starts typing, use pasted text instead
+         * of the previously selected file.
+         */
+        if (
+          currentResumeText &&
+          selectedFile
+        ) {
+          selectedFile =
+            null;
 
-        updateWidgetCounts();
+          currentFileName =
+            "";
+
+          if (fileInput) {
+            fileInput.value =
+              "";
+          }
+
+          const fileName =
+            $("#fileName");
+
+          if (fileName) {
+            fileName.innerHTML =
+              `<i class="fa-regular fa-file"></i> No file selected`;
+          }
+
+          uploadZone?.classList.remove(
+            "file-selected",
+            "has-file"
+          );
+        }
       }
     );
   }
 
-  /*
-  =======================================================
-  SCORE HELPERS
-  =======================================================
-  */
+  /* =======================================================
+     API REQUEST
+     ======================================================= */
 
-  function normalizeScore(score) {
-    const number =
-      Number(score);
+  async function requestAnalysis() {
+    const file =
+      selectedFile ||
+      fileInput?.files?.[0] ||
+      null;
 
-    if (Number.isNaN(number)) {
-      return 0;
-    }
-
-    return Math.max(
-      0,
-      Math.min(
-        100,
-        Math.round(number)
-      )
-    );
-  }
-
-  function getScoreDescription(score) {
-    const value =
-      Number(score || 0);
-
-    if (value >= 90) {
-      return "Excellent ATS readiness. Your resume is highly optimized for automated screening.";
-    }
-
-    if (value >= 80) {
-      return "Strong ATS readiness. A few improvements can make the resume even more competitive.";
-    }
-
-    if (value >= 70) {
-      return "Good ATS readiness, but several areas can still be improved.";
-    }
-
-    if (value >= 60) {
-      return "Moderate ATS readiness. Consider addressing the highlighted issues before applying.";
-    }
-
-    if (value >= 40) {
-      return "Your resume needs several improvements to perform well in ATS screening.";
-    }
-
-    return "Your resume needs significant improvements before it is ready for ATS screening.";
-  }
-
-  /*
-  =======================================================
-  ANALYSIS NORMALIZATION
-  =======================================================
-  */
-
-  function getAnalysisFileName(
-    analysis
-  ) {
-    return (
-      analysis?.resumeFileName ||
-      analysis?.reportMeta?.resumeFileName ||
-      analysis?.fileName ||
-      currentFileName ||
-      selectedFile?.name ||
-      "Pasted Resume"
-    );
-  }
-
-  function normalizeList(value) {
-    if (Array.isArray(value)) {
-      return value
-        .map((item) => {
-          if (
-            typeof item === "string"
-          ) {
-            return cleanText(item);
-          }
-
-          return cleanText(
-            item?.text ||
-            item?.description ||
-            item?.name ||
-            ""
-          );
-        })
-        .filter(Boolean);
-    }
+    const text =
+      cleanText(
+        resumeText?.value ||
+          currentResumeText
+      );
 
     if (
-      typeof value === "string"
+      !file &&
+      !text
     ) {
-      return value
-        .split(/\n+/)
-        .map(cleanText)
-        .filter(Boolean);
+      throw new Error(
+        "Please upload a resume or paste your resume text first."
+      );
     }
 
-    return [];
-  }
-
-  function normalizeAnalysis(
-    analysis
-  ) {
-    const result =
-      analysis || {};
-
-    const fileName =
-      getAnalysisFileName(
-        result
-      );
-
-    return {
-      ...result,
-
-      score:
-        normalizeScore(
-          result.score
-        ),
-
-      fileName,
-
-      resumeFileName:
-        fileName,
-
-      reportMeta: {
-        ...(result.reportMeta || {}),
-
-        resumeFileName:
-          result.reportMeta
-            ?.resumeFileName ||
-          fileName,
-
-        fileName:
-          result.reportMeta
-            ?.fileName ||
-          fileName
-      },
-
-      strengths:
-        normalizeList(
-          result.strengths
-        ).slice(0, 8),
-
-      weaknesses:
-        normalizeList(
-          result.weaknesses ||
-          result.areasToFix
-        ).slice(0, 8),
-
-      missingSkills:
-        normalizeList(
-          result.missingSkills ||
-          result.missing_skills
-        ).slice(0, 8),
-
-      suggestions:
-        normalizeList(
-          result.suggestions
-        ).slice(0, 8)
-    };
-  }
-
-  /*
-  =======================================================
-  RESULT RENDERING
-  =======================================================
-  */
-
-  function renderScore(
-    analysis
-  ) {
-    const score =
-      normalizeScore(
-        analysis?.score
-      );
-
-    setText(
-      "#scoreValue",
-      `${score}%`
-    );
-
-    setText(
-      "#scoreLabel",
-      analysis?.scoreLabel ||
-      "ATS Score"
-    );
-
-    setText(
-      "#scoreDescription",
-      getScoreDescription(score)
-    );
-  }
-
-  function renderBreakdown(
-    breakdown
-  ) {
-    const container =
-      $("#breakdown");
-
-    if (!container) return;
-
-    const data =
-      breakdown || {};
-
-    const labels = {
-      formatting: "Formatting",
-      keywords: "Keywords",
-      experience: "Experience",
-      projects: "Projects",
-      education: "Education",
-      professionalism:
-        "Professionalism"
-    };
-
-    const limits = {
-      formatting: 20,
-      keywords: 25,
-      experience: 20,
-      projects: 15,
-      education: 10,
-      professionalism: 10
-    };
-
-    container.innerHTML =
-      Object.keys(limits)
-        .map((key) => {
-          const value =
-            Number(
-              data[key] || 0
-            );
-
-          const max =
-            limits[key];
-
-          const percentage =
-            max
-              ? Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    (value / max) *
-                      100
-                  )
-                )
-              : 0;
-
-          return `
-            <div class="breakdown-item">
-              <div class="breakdown-top">
-                <span>${escapeHtml(
-                  labels[key]
-                )}</span>
-                <strong>${value}/${max}</strong>
-              </div>
-
-              <div class="progress-track">
-                <div
-                  class="progress-fill"
-                  style="width:${percentage}%"
-                ></div>
-              </div>
-            </div>
-          `;
-        })
-        .join("");
-  }
-
-  function renderList(
-    selector,
-    items,
-    emptyText
-  ) {
-    const container =
-      $(selector);
-
-    if (!container) return;
-
-    const list =
-      normalizeList(items);
-
-    if (!list.length) {
-      container.innerHTML =
-        `<div class="empty-state">${escapeHtml(
-          emptyText
-        )}</div>`;
-
-      return;
-    }
-
-    container.innerHTML =
-      list
-        .map(
-          (item, index) => `
-            <div class="result-item">
-              <span class="result-number">
-                ${index + 1}
-              </span>
-              <span class="result-text">
-                ${escapeHtml(item)}
-              </span>
-            </div>
-          `
-        )
-        .join("");
-  }
-
-  function renderCandidateName(
-    analysis
-  ) {
-    setText(
-      "#candidateName",
-      cleanText(
-        analysis?.candidateName ||
-        "Candidate"
-      )
-    );
-  }
-
-  function renderAnalysis(
-    analysis
-  ) {
-    currentAnalysis =
-      normalizeAnalysis(
-        analysis
-      );
-
-    renderScore(
-      currentAnalysis
-    );
-
-    renderCandidateName(
-      currentAnalysis
-    );
-
-    renderBreakdown(
-      currentAnalysis.breakdown
-    );
-
-    renderList(
-      "#strengths",
-      currentAnalysis.strengths,
-      "No strengths were returned by the AI analysis."
-    );
-
-    renderList(
-      "#weaknesses",
-      currentAnalysis.weaknesses,
-      "No weaknesses were returned by the AI analysis."
-    );
-
-    renderList(
-      "#missingSkills",
-      currentAnalysis.missingSkills,
-      "No missing skills were returned by the AI analysis."
-    );
-
-    renderList(
-      "#suggestions",
-      currentAnalysis.suggestions,
-      "No suggestions were returned by the AI analysis."
-    );
-
-    const resultSection =
-      $("#results");
-
-    if (resultSection) {
-      resultSection.classList.add(
-        "visible"
-      );
-
-      resultSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }
-
-  /*
-  =======================================================
-  API REQUEST
-  =======================================================
-  */
-
-  async function analyzeResume(
-    text,
-    fileName,
-    file
-  ) {
     let response;
 
     /*
-    =====================================================
-    FILE UPLOAD
-    =====================================================
-
-    Send the ORIGINAL file to /api/analyze as multipart/form-data.
-    The backend already supports PDF, DOCX and TXT extraction.
-    This avoids relying on browser-side PDF.js/Mammoth for analysis.
-    */
-
+     * FILE UPLOAD
+     */
     if (file) {
-      const formData = new FormData();
+      const formData =
+        new FormData();
 
       formData.append(
         "file",
         file,
-        getFileName(file)
+        file.name
       );
 
-      response = await fetch(
-        API_URL,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            "Accept": "application/json"
+      response =
+        await fetch(
+          API_URL,
+          {
+            method: "POST",
+
+            body:
+              formData,
+
+            headers: {
+              Accept:
+                "application/json",
+            },
           }
-        }
-      );
+        );
     }
 
     /*
-    =====================================================
-    PASTED TEXT
-    =====================================================
-    */
-
+     * PASTED TEXT
+     */
     else {
-      const payload = {
-        text: cleanText(text),
-        fileName:
-          fileName ||
-          currentFileName ||
-          "Pasted Resume"
-      };
+      response =
+        await fetch(
+          API_URL,
+          {
+            method: "POST",
 
-      response = await fetch(
-        API_URL,
-        {
-          method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
 
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
+              Accept:
+                "application/json",
+            },
 
-          body: JSON.stringify(payload)
-        }
-      );
+            body:
+              JSON.stringify({
+                text,
+
+                fileName:
+                  currentFileName ||
+                  "Pasted Resume",
+              }),
+          }
+        );
     }
+
+    const contentType =
+      response.headers.get(
+        "content-type"
+      ) || "";
 
     let data = null;
 
-    try {
-      data = await response.json();
-    } catch {
-      data = null;
+    if (
+      contentType.includes(
+        "application/json"
+      )
+    ) {
+      data =
+        await response.json();
+    } else {
+      const raw =
+        await response.text();
+
+      throw new Error(
+        raw
+          ? `Server returned an unexpected response: ${raw.slice(0, 250)}`
+          : `Analysis request failed (${response.status}).`
+      );
     }
 
     if (!response.ok) {
       throw new Error(
         data?.error ||
-        data?.message ||
-        `Analysis failed (${response.status}).`
+          data?.message ||
+          `Analysis failed (${response.status}).`
       );
     }
 
@@ -1200,996 +553,778 @@
     return data;
   }
 
+  /* =======================================================
+     RESULT NORMALIZATION
+     ======================================================= */
 
-  /*
-  =======================================================
-  ANALYZE BUTTON / FORM
-  =======================================================
-  */
+  function normalizeScore(
+    value
+  ) {
+    const number =
+      Number(value);
 
-  const analyzeForm =
-    $("#analyzeForm");
-
-  async function startAnalysis(event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+    if (
+      !Number.isFinite(
+        number
+      )
+    ) {
+      return 0;
     }
 
-    /*
-    If a file was selected, upload the ORIGINAL FILE.
-    Do not require currentResumeText to be populated.
-    The backend extracts the PDF/DOCX/TXT itself.
-    */
+    return Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(number)
+      )
+    );
+  }
 
-    const file =
-      selectedFile ||
-      fileInput?.files?.[0] ||
-      null;
+  function normalizeList(
+    value
+  ) {
+    if (
+      !Array.isArray(
+        value
+      )
+    ) {
+      return [];
+    }
 
-    const text =
-      cleanText(
-        resumeText?.value ||
-        currentResumeText
-      );
+    return value
+      .map(
+        (item) => {
+          if (
+            typeof item ===
+            "string"
+          ) {
+            return cleanText(
+              item
+            );
+          }
 
-    if (!file && !text) {
-      alert(
-        "Please upload a resume or paste your resume text first."
-      );
+          return cleanText(
+            item?.text ||
+              item?.description ||
+              item?.name ||
+              ""
+          );
+        }
+      )
+      .filter(Boolean)
+      .slice(0, 8);
+  }
 
+  function normalizeAnalysis(
+    data
+  ) {
+    const fileName =
+      data?.resumeFileName ||
+      data?.fileName ||
+      currentFileName ||
+      "Pasted Resume";
+
+    return {
+      ...data,
+
+      score:
+        normalizeScore(
+          data?.score
+        ),
+
+      fileName,
+
+      resumeFileName:
+        fileName,
+
+      strengths:
+        normalizeList(
+          data?.strengths
+        ),
+
+      weaknesses:
+        normalizeList(
+          data?.weaknesses
+        ),
+
+      missingSkills:
+        normalizeList(
+          data?.missingSkills ||
+            data?.missing_skills
+        ),
+
+      suggestions:
+        normalizeList(
+          data?.suggestions
+        ),
+
+      breakdown:
+        data?.breakdown ||
+        {},
+    };
+  }
+
+  /* =======================================================
+     SCORE DESCRIPTION
+     ======================================================= */
+
+  function scoreDescription(
+    score
+  ) {
+    if (
+      score >= 90
+    ) {
+      return "Excellent ATS readiness. Your resume is highly optimized for automated screening.";
+    }
+
+    if (
+      score >= 80
+    ) {
+      return "Strong ATS readiness. A few improvements can make the resume even more competitive.";
+    }
+
+    if (
+      score >= 70
+    ) {
+      return "Good ATS readiness, but several areas can still be improved.";
+    }
+
+    if (
+      score >= 60
+    ) {
+      return "Moderate ATS readiness. Consider addressing the highlighted issues before applying.";
+    }
+
+    if (
+      score >= 40
+    ) {
+      return "Your resume needs several improvements to perform well in ATS screening.";
+    }
+
+    return "Your resume needs significant improvements before it is ready for ATS screening.";
+  }
+
+  /* =======================================================
+     BREAKDOWN
+     ======================================================= */
+
+  function renderBreakdown(
+    breakdown
+  ) {
+    const container =
+      $("#breakdownGrid");
+
+    if (!container) {
       return;
     }
 
-    setLoading(true);
+    const labels = {
+      formatting:
+        [
+          "Formatting",
+          20,
+        ],
 
-    try {
-      const analysis =
-        await analyzeResume(
-          text,
-          currentFileName ||
-          file?.name ||
-          selectedFile?.name ||
-          "Pasted Resume",
-          file
-        );
+      keywords:
+        [
+          "Keywords",
+          25,
+        ],
 
-      renderAnalysis(
-        analysis
-      );
+      experience:
+        [
+          "Experience",
+          20,
+        ],
 
-    } catch (error) {
-      console.error(
-        "Resume analysis error:",
-        error
-      );
+      projects:
+        [
+          "Projects",
+          15,
+        ],
 
-      alert(
-        error?.message ||
-        "Unable to analyze the resume."
-      );
+      education:
+        [
+          "Education",
+          10,
+        ],
 
-    } finally {
-      setLoading(false);
-    }
-  }
+      professionalism:
+        [
+          "Professionalism",
+          10,
+        ],
+    };
 
-  /*
-  The HTML uses:
-  <form id="analyzeForm">
-    <button id="analyzeBtn" type="submit">
-  </form>
-
-  Listen to the FORM submit so the browser never reloads the page.
-  */
-
-  if (analyzeForm) {
-    analyzeForm.addEventListener(
-      "submit",
-      startAnalysis
-    );
-  } else if (analyzeButton) {
-    /*
-    Fallback for pages that don't have #analyzeForm.
-    */
-
-    analyzeButton.addEventListener(
-      "click",
-      startAnalysis
-    );
-  }
-
-
-  /*
-  =======================================================
-  RESET
-  =======================================================
-  */
-
-  if (resetButton) {
-    resetButton.addEventListener(
-      "click",
-      () => {
-        currentAnalysis = null;
-        currentResumeText = "";
-
-        clearSelectedFile();
-
-        if (resumeText) {
-          resumeText.value = "";
-        }
-
-        const results =
-          $("#results");
-
-        if (results) {
-          results.classList.remove(
-            "visible"
-          );
-        }
-
-        setInputMode("");
-        updateWidgetCounts();
-      }
-    );
-  }
-
-  /*
-  =======================================================
-  PDF LIBRARY LOADER
-  =======================================================
-  */
-
-  function loadJsPDF() {
-    return new Promise(
-      (resolve, reject) => {
-        if (
-          window.jspdf?.jsPDF
-        ) {
-          resolve(
-            window.jspdf.jsPDF
-          );
-
-          return;
-        }
-
-        const existing =
-          document.querySelector(
-            'script[data-resumcheck-jspdf="true"]'
-          );
-
-        if (existing) {
-          existing.addEventListener(
-            "load",
-            () => {
-              if (
-                window.jspdf?.jsPDF
-              ) {
-                resolve(
-                  window.jspdf.jsPDF
-                );
-              } else {
-                reject(
-                  new Error(
-                    "jsPDF loaded but was not available."
+    container.innerHTML =
+      Object.entries(
+        labels
+      )
+        .map(
+          (
+            [
+              key,
+              [
+                label,
+                max,
+              ],
+            ]
+          ) => {
+            const value =
+              Math.max(
+                0,
+                Math.min(
+                  max,
+                  Number(
+                    breakdown?.[
+                      key
+                    ] || 0
                   )
-                );
-              }
-            },
-            { once: true }
-          );
-
-          existing.addEventListener(
-            "error",
-            () => {
-              reject(
-                new Error(
-                  "Unable to load jsPDF."
                 )
               );
-            },
-            { once: true }
-          );
 
-          return;
-        }
+            const percent =
+              (value /
+                max) *
+              100;
 
-        const script =
-          document.createElement(
-            "script"
-          );
+            return `
+              <div class="breakdown-item">
+                <div class="breakdown-top">
+                  <span>${escapeHtml(label)}</span>
+                  <strong>${value}/${max}</strong>
+                </div>
 
-        script.src =
-          "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js";
-
-        script.async = true;
-
-        script.dataset.resumcheckJspdf =
-          "true";
-
-        script.onload = () => {
-          if (
-            window.jspdf?.jsPDF
-          ) {
-            resolve(
-              window.jspdf.jsPDF
-            );
-          } else {
-            reject(
-              new Error(
-                "jsPDF loaded but was not available."
-              )
-            );
+                <div class="progress-track">
+                  <div
+                    class="progress-fill"
+                    style="width:${percent}%"
+                  ></div>
+                </div>
+              </div>
+            `;
           }
-        };
-
-        script.onerror = () => {
-          const fallback =
-            document.createElement(
-              "script"
-            );
-
-          fallback.src =
-            "https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js";
-
-          fallback.async = true;
-
-          fallback.onload = () => {
-            if (
-              window.jspdf?.jsPDF
-            ) {
-              resolve(
-                window.jspdf.jsPDF
-              );
-            } else {
-              reject(
-                new Error(
-                  "Unable to initialize jsPDF."
-                )
-              );
-            }
-          };
-
-          fallback.onerror = () => {
-            reject(
-              new Error(
-                "Unable to load jsPDF."
-              )
-            );
-          };
-
-          document.head.appendChild(
-            fallback
-          );
-        };
-
-        document.head.appendChild(
-          script
-        );
-      }
-    );
+        )
+        .join("");
   }
 
-  /*
-  =======================================================
-  PDF HELPERS
-  =======================================================
-  */
+  /* =======================================================
+     LIST RENDERING
+     ======================================================= */
 
-  function cleanPdfText(value) {
-    return String(value ?? "")
-      .replace(
-        /[\u200B-\u200D\uFEFF]/g,
-        ""
-      )
-      .replace(/\u00A0/g, " ")
-      .replace(/\r\n/g, "\n")
-      .replace(/[ \t]+/g, " ")
-      .trim();
-  }
-
-  function getResumeFileName() {
-    return (
-      cleanPdfText(
-        currentAnalysis?.resumeFileName ||
-        currentAnalysis?.reportMeta?.resumeFileName ||
-        currentAnalysis?.fileName ||
-        currentFileName ||
-        "Pasted Resume"
-      ) ||
-      "Pasted Resume"
-    );
-  }
-
-  function makeSafeFileName(
-    value
-  ) {
-    const cleaned =
-      String(
-        value || "Resume"
-      )
-        .replace(
-          /\.[^/.]+$/,
-          ""
-        )
-        .replace(
-          /[<>:"/\\|?*\x00-\x1F]/g,
-          ""
-        )
-        .replace(
-          /\s+/g,
-          "-"
-        )
-        .replace(
-          /-+/g,
-          "-"
-        )
-        .replace(
-          /^-|-$/g,
-          ""
-        )
-        .slice(0, 80);
-
-    return (
-      cleaned ||
-      "Resume"
-    );
-  }
-
-  function getTextItems(
-    selector
+  function renderList(
+    selector,
+    items,
+    emptyText
   ) {
     const container =
       $(selector);
 
     if (!container) {
-      return [];
+      return;
     }
 
-    return Array.from(
-      container.children
-    )
-      .map(
-        (element) =>
-          cleanPdfText(
-            element.textContent
-          )
-      )
-      .filter(Boolean);
-  }
-
-  const PDF_CONTENT_BOTTOM = 270;
-  const PDF_FOOTER_Y = 289;
-
-  function addPdfPageIfNeeded(
-    pdf,
-    state,
-    requiredHeight = 15
-  ) {
-    if (
-      state.y +
-        requiredHeight >
-      PDF_CONTENT_BOTTOM
-    ) {
-      pdf.addPage();
-      state.y = 20;
-    }
-  }
-
-  function addPdfSection(
-    pdf,
-    state,
-    title
-  ) {
-    addPdfPageIfNeeded(
-      pdf,
-      state,
-      25
-    );
-
-    pdf.setFont(
-      "helvetica",
-      "bold"
-    );
-
-    pdf.setFontSize(15);
-
-    pdf.setTextColor(
-      15,
-      23,
-      42
-    );
-
-    pdf.text(
-      cleanPdfText(title),
-      20,
-      state.y
-    );
-
-    state.y += 7;
-
-    pdf.setDrawColor(
-      226,
-      232,
-      240
-    );
-
-    pdf.line(
-      20,
-      state.y,
-      190,
-      state.y
-    );
-
-    state.y += 7;
-  }
-
-  function drawPdfBullet(
-    pdf,
-    x,
-    y,
-    bullet
-  ) {
-    pdf.setFont(
-      "helvetica",
-      "bold"
-    );
-
-    pdf.setFontSize(10);
-
-    pdf.setTextColor(
-      37,
-      99,
-      235
-    );
-
-    pdf.text(
-      bullet || "-",
-      x,
-      y
-    );
-  }
-
-  function addPdfItems(
-    pdf,
-    state,
-    items,
-    bullet = "-"
-  ) {
     const safeItems =
       Array.isArray(items)
         ? items
-            .map(cleanPdfText)
-            .filter(Boolean)
         : [];
 
-    if (!safeItems.length) {
-      addPdfPageIfNeeded(
-        pdf,
-        state,
-        10
-      );
+    container.innerHTML =
+      safeItems.length
+        ? safeItems
+            .map(
+              (item) =>
+                `<li>${escapeHtml(item)}</li>`
+            )
+            .join("")
+        : `<li>${escapeHtml(emptyText)}</li>`;
+  }
 
-      pdf.setFont(
-        "helvetica",
-        "normal"
-      );
+  /* =======================================================
+     MISSING SKILLS
+     ======================================================= */
 
-      pdf.setFontSize(9);
+  function renderChips(
+    items
+  ) {
+    const container =
+      $("#missingSkills");
 
-      pdf.setTextColor(
-        148,
-        163,
-        184
-      );
+    if (!container) {
+      return;
+    }
 
-      pdf.text(
-        "No items available.",
-        30,
-        state.y
-      );
-
-      state.y += 8;
+    if (
+      !items.length
+    ) {
+      container.innerHTML =
+        `<span class="chip">No AI skill gaps returned.</span>`;
 
       return;
     }
 
-    safeItems.forEach(
-      (item) => {
-        const textX = 31;
-        const textWidth = 157;
-
-        const lines =
-          pdf.splitTextToSize(
-            item,
-            textWidth
-          );
-
-        const lineHeight = 4.8;
-
-        const requiredHeight =
-          Math.max(
-            8,
-            lines.length *
-              lineHeight +
-              4
-          );
-
-        addPdfPageIfNeeded(
-          pdf,
-          state,
-          requiredHeight
-        );
-
-        drawPdfBullet(
-          pdf,
-          24,
-          state.y,
-          bullet
-        );
-
-        pdf.setFont(
-          "helvetica",
-          "normal"
-        );
-
-        pdf.setFontSize(9.5);
-
-        pdf.setTextColor(
-          51,
-          65,
-          85
-        );
-
-        pdf.text(
-          lines,
-          textX,
-          state.y
-        );
-
-        state.y +=
-          lines.length *
-            lineHeight +
-          4;
-      }
-    );
+    container.innerHTML =
+      items
+        .map(
+          (item) =>
+            `<span class="chip">${escapeHtml(item)}</span>`
+        )
+        .join("");
   }
 
-  function addPdfFileInfo(
-    pdf,
-    state,
-    resumeFileName
+  /* =======================================================
+     RENDER ANALYSIS
+     ======================================================= */
+
+  function renderAnalysis(
+    rawData
   ) {
-    const text =
-      `Resume: ${cleanPdfText(
-        resumeFileName
-      )}`;
-
-    const lines =
-      pdf.splitTextToSize(
-        text,
-        170
+    const data =
+      normalizeAnalysis(
+        rawData
       );
 
-    pdf.setFont(
-      "helvetica",
-      "normal"
-    );
-
-    pdf.setFontSize(9);
-
-    pdf.setTextColor(
-      71,
-      85,
-      105
-    );
-
-    pdf.text(
-      lines,
-      20,
-      state.y
-    );
-
-    state.y +=
-      lines.length *
-        4.5 +
-      6;
-  }
-
-  function addPdfFooters(
-    pdf
-  ) {
-    const totalPages =
-      pdf.internal.getNumberOfPages();
-
-    for (
-      let page = 1;
-      page <= totalPages;
-      page++
-    ) {
-      pdf.setPage(page);
-
-      pdf.setFont(
-        "helvetica",
-        "normal"
-      );
-
-      pdf.setFontSize(8);
-
-      pdf.setTextColor(
-        148,
-        163,
-        184
-      );
-
-      pdf.text(
-        `ResumCheck | ATS Resume Analysis | Page ${page} of ${totalPages}`,
-        20,
-        PDF_FOOTER_Y
-      );
-    }
-  }
-
-  async function createPDFReport() {
-    const jsPDF =
-      await loadJsPDF();
-
-    if (!currentAnalysis) {
-      throw new Error(
-        "No resume analysis is available."
-      );
-    }
-
-    const pdf =
-      new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4"
-      });
-
-    const state = {
-      y: 20
-    };
+    currentAnalysis =
+      data;
 
     const score =
-      Number(
-        currentAnalysis.score || 0
+      data.score;
+
+    const scoreValue =
+      $("#scoreValue");
+
+    if (scoreValue) {
+      scoreValue.textContent =
+        `${score}%`;
+    }
+
+    const scoreLabel =
+      $("#scoreLabel");
+
+    if (scoreLabel) {
+      scoreLabel.textContent =
+        data.scoreLabel ||
+        "ATS Score";
+    }
+
+    const scoreDescriptionEl =
+      $("#scoreDescription");
+
+    if (
+      scoreDescriptionEl
+    ) {
+      scoreDescriptionEl.textContent =
+        scoreDescription(
+          score
+        );
+    }
+
+    const scoreRing =
+      $("#scoreRing");
+
+    if (scoreRing) {
+      scoreRing.style.setProperty(
+        "--score",
+        `${score * 3.6}deg`
+      );
+    }
+
+    renderBreakdown(
+      data.breakdown
+    );
+
+    renderList(
+      "#strengths",
+      data.strengths,
+      "Gemini did not return strengths."
+    );
+
+    renderList(
+      "#weaknesses",
+      data.weaknesses,
+      "Gemini did not return weaknesses."
+    );
+
+    renderChips(
+      data.missingSkills
+    );
+
+    renderList(
+      "#suggestions",
+      data.suggestions,
+      "Gemini did not return suggestions."
+    );
+
+    if (
+      resultSection
+    ) {
+      resultSection.classList.remove(
+        "hidden"
       );
 
-    const label =
-      cleanPdfText(
-        currentAnalysis.scoreLabel ||
-        "ATS Score"
-      );
+      resultSection.scrollIntoView({
+        behavior:
+          "smooth",
 
-    const description =
-      cleanPdfText(
-        getScoreDescription(score)
-      );
+        block:
+          "start",
+      });
+    }
+  }
 
-    const resumeFileName =
-      getResumeFileName();
+  /* =======================================================
+     ANALYZE FORM
+     ======================================================= */
 
-    pdf.setFont(
-      "helvetica",
-      "bold"
-    );
+  if (analyzeForm) {
+    analyzeForm.addEventListener(
+      "submit",
+      async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-    pdf.setFontSize(25);
+        clearError();
 
-    pdf.setTextColor(
-      37,
-      99,
-      235
-    );
+        setLoading(
+          true
+        );
 
-    pdf.text(
-      "ResumCheck",
-      20,
-      state.y
-    );
+        setLoadingStep(
+          selectedFile
+            ? "Uploading and reading your resume..."
+            : "Reading your resume text..."
+        );
 
-    state.y += 8;
+        try {
+          const data =
+            await requestAnalysis();
 
-    pdf.setFont(
-      "helvetica",
-      "normal"
-    );
-
-    pdf.setFontSize(10);
-
-    pdf.setTextColor(
-      100,
-      116,
-      139
-    );
-
-    pdf.text(
-      "AI-Powered Resume ATS Analysis Report",
-      20,
-      state.y
-    );
-
-    state.y += 8;
-
-    addPdfFileInfo(
-      pdf,
-      state,
-      resumeFileName
-    );
-
-    pdf.setFillColor(
-      245,
-      247,
-      251
-    );
-
-    pdf.roundedRect(
-      20,
-      state.y,
-      170,
-      42,
-      6,
-      6,
-      "F"
-    );
-
-    pdf.setFont(
-      "helvetica",
-      "bold"
-    );
-
-    pdf.setFontSize(29);
-
-    pdf.setTextColor(
-      37,
-      99,
-      235
-    );
-
-    pdf.text(
-      `${score}%`,
-      30,
-      state.y + 19
-    );
-
-    pdf.setFontSize(10);
-
-    pdf.setTextColor(
-      71,
-      85,
-      105
-    );
-
-    pdf.text(
-      "ATS SCORE",
-      30,
-      state.y + 28
-    );
-
-    pdf.setFontSize(14);
-
-    pdf.setTextColor(
-      15,
-      23,
-      42
-    );
-
-    pdf.text(
-      label,
-      90,
-      state.y + 17
-    );
-
-    pdf.setFont(
-      "helvetica",
-      "normal"
-    );
-
-    pdf.setFontSize(9);
-
-    pdf.setTextColor(
-      100,
-      116,
-      139
-    );
-
-    const descriptionLines =
-      pdf.splitTextToSize(
-        description,
-        88
-      );
-
-    pdf.text(
-      descriptionLines,
-      90,
-      state.y + 25
-    );
-
-    state.y += 55;
-
-    addPdfSection(
-      pdf,
-      state,
-      "Score Breakdown"
-    );
-
-    const breakdown =
-      currentAnalysis.breakdown ||
-      {};
-
-    const breakdownLabels = {
-      formatting: "Formatting",
-      keywords: "Keywords",
-      experience: "Experience",
-      projects: "Projects",
-      education: "Education",
-      professionalism:
-        "Professionalism"
-    };
-
-    const breakdownLimits = {
-      formatting: 20,
-      keywords: 25,
-      experience: 20,
-      projects: 15,
-      education: 10,
-      professionalism: 10
-    };
-
-    Object.entries(
-      breakdownLimits
-    ).forEach(
-      ([key, max]) => {
-        const value =
-          Number(
-            breakdown[key] || 0
+          setLoadingStep(
+            "Building your ATS report..."
           );
 
-        addPdfItems(
-          pdf,
-          state,
-          [
-            `${breakdownLabels[key]}: ${value}/${max}`
-          ],
-          "-"
-        );
+          renderAnalysis(
+            data
+          );
+        } catch (error) {
+          console.error(
+            "ResumCheck analysis error:",
+            error
+          );
+
+          showError(
+            error?.message ||
+              "Unable to analyze the resume."
+          );
+        } finally {
+          setLoading(
+            false
+          );
+        }
       }
-    );
-
-    addPdfSection(
-      pdf,
-      state,
-      "Strengths"
-    );
-
-    addPdfItems(
-      pdf,
-      state,
-      getTextItems(
-        "#strengths"
-      ),
-      "+"
-    );
-
-    addPdfSection(
-      pdf,
-      state,
-      "Areas to Fix"
-    );
-
-    addPdfItems(
-      pdf,
-      state,
-      getTextItems(
-        "#weaknesses"
-      ),
-      "!"
-    );
-
-    addPdfSection(
-      pdf,
-      state,
-      "Missing Skills"
-    );
-
-    addPdfItems(
-      pdf,
-      state,
-      getTextItems(
-        "#missingSkills"
-      ),
-      "+"
-    );
-
-    addPdfSection(
-      pdf,
-      state,
-      "Actionable Suggestions"
-    );
-
-    addPdfItems(
-      pdf,
-      state,
-      getTextItems(
-        "#suggestions"
-      ),
-      ">"
-    );
-
-    addPdfFooters(pdf);
-
-    const date =
-      new Date()
-        .toISOString()
-        .slice(0, 10);
-
-    const safeResumeName =
-      makeSafeFileName(
-        resumeFileName
-      );
-
-    pdf.save(
-      `ResumCheck-ATS-Report-${safeResumeName}-${date}.pdf`
     );
   }
 
-  /*
-  =======================================================
-  DOWNLOAD BUTTON
-  =======================================================
-  */
+  /* =======================================================
+     RESET
+     ======================================================= */
 
-  if (downloadButton) {
-    downloadButton.addEventListener(
+  const newAnalysis =
+    $("#newAnalysis");
+
+  if (newAnalysis) {
+    newAnalysis.addEventListener(
+      "click",
+      () => {
+        currentAnalysis =
+          null;
+
+        clearSelectedFile();
+
+        clearError();
+
+        if (
+          resultSection
+        ) {
+          resultSection.classList.add(
+            "hidden"
+          );
+        }
+
+        document
+          .querySelector(
+            "#upload"
+          )
+          ?.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "start",
+          });
+      }
+    );
+  }
+
+  /* =======================================================
+     PDF REPORT
+     ======================================================= */
+
+  const downloadReport =
+    $("#downloadReport");
+
+  if (downloadReport) {
+    downloadReport.addEventListener(
       "click",
       async () => {
-        if (!currentAnalysis) {
-          alert(
-            "Please analyze a resume before downloading the report."
+        if (
+          !currentAnalysis
+        ) {
+          showError(
+            "Analyze a resume first."
           );
 
           return;
         }
 
-        const originalText =
-          downloadButton.textContent;
+        const jsPDF =
+          window.jspdf?.jsPDF;
+
+        if (!jsPDF) {
+          showError(
+            "PDF report library is not loaded. Please refresh the page and try again."
+          );
+
+          return;
+        }
 
         try {
-          downloadButton.disabled =
+          downloadReport.disabled =
             true;
 
-          downloadButton.textContent =
-            "Generating PDF...";
+          const doc =
+            new jsPDF({
+              unit: "pt",
+              format: "a4",
+            });
 
-          await createPDFReport();
+          const margin =
+            40;
+
+          let y = 48;
+
+          const addText =
+            (
+              text,
+              size = 10
+            ) => {
+              doc.setFontSize(
+                size
+              );
+
+              const lines =
+                doc.splitTextToSize(
+                  String(
+                    text || ""
+                  ),
+                  515
+                );
+
+              if (
+                y +
+                  lines.length *
+                    (size + 4) >
+                800
+              ) {
+                doc.addPage();
+
+                y = 48;
+              }
+
+              doc.text(
+                lines,
+                margin,
+                y
+              );
+
+              y +=
+                lines.length *
+                  (size + 4) +
+                8;
+            };
+
+          addText(
+            "ResumCheck — ATS Resume Report",
+            18
+          );
+
+          addText(
+            `Resume: ${
+              currentAnalysis.fileName ||
+              "Pasted Resume"
+            }`,
+            11
+          );
+
+          addText(
+            `Candidate: ${
+              currentAnalysis.candidateName ||
+              "Candidate"
+            }`,
+            11
+          );
+
+          addText(
+            `ATS Score: ${
+              currentAnalysis.score
+            }% — ${
+              currentAnalysis.scoreLabel ||
+              ""
+            }`,
+            14
+          );
+
+          addText(
+            "Score Breakdown",
+            13
+          );
+
+          for (
+            const [
+              key,
+              label,
+              max,
+            ] of [
+              [
+                "formatting",
+                "Formatting",
+                20,
+              ],
+
+              [
+                "keywords",
+                "Keywords",
+                25,
+              ],
+
+              [
+                "experience",
+                "Experience",
+                20,
+              ],
+
+              [
+                "projects",
+                "Projects",
+                15,
+              ],
+
+              [
+                "education",
+                "Education",
+                10,
+              ],
+
+              [
+                "professionalism",
+                "Professionalism",
+                10,
+              ],
+            ]
+          ) {
+            addText(
+              `${label}: ${
+                currentAnalysis
+                  .breakdown?.[
+                  key
+                ] || 0
+              }/${max}`,
+              10
+            );
+          }
+
+          const sections =
+            [
+              [
+                "Strengths",
+                currentAnalysis
+                  .strengths,
+              ],
+
+              [
+                "Areas to Fix",
+                currentAnalysis
+                  .weaknesses,
+              ],
+
+              [
+                "Missing Skills",
+                currentAnalysis
+                  .missingSkills,
+              ],
+
+              [
+                "Actionable Suggestions",
+                currentAnalysis
+                  .suggestions,
+              ],
+            ];
+
+          for (
+            const [
+              title,
+              items,
+            ] of sections
+          ) {
+            addText(
+              title,
+              13
+            );
+
+            (
+              items.length
+                ? items
+                : [
+                    "No AI items returned.",
+                  ]
+            ).forEach(
+              (
+                item,
+                index
+              ) => {
+                addText(
+                  `${
+                    index + 1
+                  }. ${item}`,
+                  10
+                );
+              }
+            );
+          }
+
+          doc.save(
+            "ResumCheck-ATS-Report.pdf"
+          );
         } catch (error) {
           console.error(
-            "PDF generation error:",
+            "PDF report error:",
             error
           );
 
-          alert(
-            error?.message ||
-            "Unable to generate the PDF report."
+          showError(
+            "Could not generate the PDF report."
           );
         } finally {
-          downloadButton.disabled =
+          downloadReport.disabled =
             false;
-
-          downloadButton.textContent =
-            originalText ||
-            "Download PDF";
         }
       }
     );
   }
 
-  /*
-  =======================================================
-  CONTACT FORM
-  =======================================================
-  */
+  /* =======================================================
+     CONTACT FORM
+     ======================================================= */
 
   const contactForm =
     $("#contactForm");
@@ -2200,81 +1335,58 @@
       (event) => {
         event.preventDefault();
 
-        const formData =
-          new FormData(
-            contactForm
-          );
+        const status =
+          $("#contactStatus");
 
         const name =
           cleanText(
-            formData.get("name") ||
-            ""
+            $("#contactName")
+              ?.value
           );
 
         const email =
           cleanText(
-            formData.get("email") ||
-            ""
+            $("#contactEmail")
+              ?.value
+          );
+
+        const subject =
+          cleanText(
+            $("#contactSubject")
+              ?.value
           );
 
         const message =
           cleanText(
-            formData.get("message") ||
-            ""
+            $("#contactMessage")
+              ?.value
           );
 
-        if (!name) {
-          alert(
-            "Please enter your name."
-          );
+        if (
+          !name ||
+          !email ||
+          !subject ||
+          !message
+        ) {
+          if (status) {
+            status.textContent =
+              "Please complete all fields.";
+          }
+
           return;
         }
 
-        if (!email) {
-          alert(
-            "Please enter your email."
-          );
-          return;
+        if (status) {
+          status.textContent =
+            "Thanks! Your message is ready to be sent.";
         }
-
-        if (!message) {
-          alert(
-            "Please enter your message."
-          );
-          return;
-        }
-
-        alert(
-          "Thank you! Your message has been received."
-        );
 
         contactForm.reset();
       }
     );
   }
 
-  /*
-  =======================================================
-  INITIALIZATION
-  =======================================================
-  */
-
-  function initialize() {
-    updateWidgetCounts();
-    setInputMode("");
-
-    /*
-    Make sure an accidentally disabled file input
-    does not prevent the upload zone from working.
-    */
-
-    if (fileInput) {
-      fileInput.disabled = false;
-      fileInput.removeAttribute(
-        "aria-hidden"
-      );
-    }
-  }
-
-  initialize();
+  console.log(
+    "ResumCheck frontend initialized."
+  );
 })();
