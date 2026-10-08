@@ -257,7 +257,7 @@
                         </div>
                     </div>
 
-                    <form id="analyzeForm">
+                    <form id="analyzeForm" novalidate>
                         <div class="legacy-mode-controls" aria-hidden="true">
                             <button type="button" class="mode-btn active" id="fileModeBtn" tabindex="-1">Upload File</button>
                             <button type="button" class="mode-btn" id="textModeBtn" tabindex="-1">Paste Text</button>
@@ -283,8 +283,8 @@
                             </label>
                         </div>
 
-                        <div id="errorMsg" class="alert error hidden"></div>
-                        <button type="submit" class="analyze-btn" id="analyzeBtn">
+                        <div id="errorMsg" class="alert error hidden" role="alert" aria-live="polite"></div>
+                        <button type="submit" class="analyze-btn" id="analyzeBtn" aria-live="polite">
                             <span>Analyze My Resume</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
@@ -470,7 +470,7 @@
         <div id="loadingOverlay" class="loading-overlay hidden">
             <div class="loader"></div>
             <h3>Analyzing Resume...</h3>
-            <p id="loadingStep">Reading document structure...</p>
+            <p id="loadingStep" aria-live="polite">Reading document structure...</p>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
