@@ -3126,3 +3126,49 @@ textarea:focus-visible {
   outline: 2px solid #7da4ff;
   outline-offset: 4px;
 }
+
+/* =========================================================
+   MOBILE TAP / CLICK HIGHLIGHT FIX
+   Prevents the temporary blue/blurred box when tapping
+   navigation links or buttons on mobile devices.
+   ========================================================= */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav a,
+.hamburger,
+.nav-cta,
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+.mobile-nav a:active,
+.mobile-nav a:focus,
+.mobile-nav a:focus-visible,
+.hamburger:active,
+.hamburger:focus,
+.hamburger:focus-visible {
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Prevent mobile navigation links from getting a temporary
+   blue background while being tapped. */
+@media (max-width: 760px) {
+
+    .mobile-nav a {
+        background: transparent !important;
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    .mobile-nav a:active {
+        background: transparent !important;
+        color: inherit;
+    }
+}
