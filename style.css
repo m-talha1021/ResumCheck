@@ -3172,3 +3172,139 @@ a {
         color: inherit;
     }
 }
+
+/* =========================================================
+   RESUMCHECK — NEW PREMIUM BUTTON GRADIENT
+   Overrides the previous purple/blue/cyan gradients
+   ========================================================= */
+
+/* Main CTA buttons */
+.analyze-btn,
+.analyze-button,
+.hero .btn,
+.upload-card .btn,
+.contact-form .btn,
+.send-message-btn,
+.nav-cta {
+    background: linear-gradient(
+        135deg,
+        #0f766e 0%,
+        #0891b2 48%,
+        #2563eb 100%
+    ) !important;
+
+    color: #ffffff !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+
+    box-shadow:
+        0 10px 28px rgba(8, 145, 178, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease !important;
+}
+
+
+/* Hover */
+.analyze-btn:hover,
+.analyze-button:hover,
+.hero .btn:hover,
+.upload-card .btn:hover,
+.contact-form .btn:hover,
+.send-message-btn:hover,
+.nav-cta:hover {
+    background: linear-gradient(
+        135deg,
+        #0d9488 0%,
+        #06b6d4 48%,
+        #3b82f6 100%
+    ) !important;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 15px 35px rgba(8, 145, 178, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+
+    filter: brightness(1.04);
+}
+
+
+/* Active / pressed */
+.analyze-btn:active,
+.analyze-button:active,
+.hero .btn:active,
+.upload-card .btn:active,
+.contact-form .btn:active,
+.send-message-btn:active,
+.nav-cta:active {
+    transform: translateY(0) scale(0.985);
+
+    box-shadow:
+        0 6px 18px rgba(8, 145, 178, 0.20) !important;
+}
+
+
+/* =========================================================
+   UPLOAD / ANALYZE BUTTON
+   ========================================================= */
+
+#analyzeBtn,
+#analyzeButton {
+    background: linear-gradient(
+        135deg,
+        #0f766e 0%,
+        #0891b2 50%,
+        #2563eb 100%
+    ) !important;
+
+    color: #fff !important;
+}
+
+
+/* =========================================================
+   SEND MESSAGE BUTTON
+   ========================================================= */
+
+#sendMessageBtn,
+#contactSubmit,
+button[type="submit"] {
+    background: linear-gradient(
+        135deg,
+        #0f766e 0%,
+        #0891b2 50%,
+        #2563eb 100%
+    ) !important;
+
+    color: #fff !important;
+}
+
+
+/* =========================================================
+   MOBILE — SAME GRADIENT
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .analyze-btn,
+    .analyze-button,
+    #analyzeBtn,
+    #analyzeButton,
+    .hero .btn,
+    .upload-card .btn,
+    .contact-form .btn,
+    .send-message-btn,
+    #sendMessageBtn,
+    #contactSubmit,
+    button[type="submit"] {
+        background: linear-gradient(
+            135deg,
+            #0f766e 0%,
+            #0891b2 50%,
+            #2563eb 100%
+        ) !important;
+    }
+}
