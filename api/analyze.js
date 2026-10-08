@@ -26,26 +26,38 @@ try {
 }
 
 let pdfParseModule = null;
+let PDFParseClass = null;
 
 try {
+  // Initialize pdf-parse's worker before loading the parser.
+  // This is important for Vercel/serverless Node environments.
+  try {
+    require("pdf-parse/worker");
+  } catch (workerError) {
+    console.warn(
+      "pdf-parse worker initialization warning:",
+      workerError?.message || workerError
+    );
+  }
+
   pdfParseModule = require("pdf-parse");
+
+  PDFParseClass =
+    pdfParseModule?.PDFParse ||
+    pdfParseModule?.default?.PDFParse ||
+    null;
+
+  if (!PDFParseClass) {
+    throw new Error(
+      "PDFParse was not found. Install pdf-parse@2.4.5."
+    );
+  }
 } catch (error) {
   console.warn(
-    "pdf-parse is not installed; PDF string fallback will be used."
+    "pdf-parse could not be loaded:",
+    error?.message || error
   );
 }
-
-const pdfParseFunction =
-  typeof pdfParseModule === "function"
-    ? pdfParseModule
-    : typeof pdfParseModule?.default === "function"
-      ? pdfParseModule.default
-      : null;
-
-const PDFParseClass =
-  pdfParseModule?.PDFParse ||
-  pdfParseModule?.default?.PDFParse ||
-  null;
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_RESUME_CHARS = 60000;
@@ -351,143 +363,90 @@ function parseMultipartBody(
    PDF
    ========================================================= */
 
-function fallbackPdfText(buffer) {
-  const source =
-    buffer.toString(
-      "latin1"
-    );
-
-  const chunks = [];
-
-  const literalPattern =
-    /\((?:\\.|[^\\)]){2,}\)/g;
-
-  let match;
-
-  while (
-    (match =
-      literalPattern.exec(
-        source
-      ))
-  ) {
-    let value =
-      match[0]
-        .slice(1, -1)
-        .replace(
-          /\\n/g,
-          "\n"
-        )
-        .replace(
-          /\\r/g,
-          "\n"
-        )
-        .replace(
-          /\\t/g,
-          " "
-        )
-        .replace(
-          /\\([\\()])/g,
-          "$1"
-        );
-
-    if (
-      value.trim()
-    ) {
-      chunks.push(value);
-    }
+async function extractPdfText(buffer) {
+  if (!Buffer.isBuffer(buffer) || !buffer.length) {
+    throw new Error("The uploaded PDF is empty.");
   }
 
-  return normalizeResumeText(
-    chunks.join(" ")
-  );
-}
+  const header = buffer.subarray(0, 5).toString("latin1");
 
-async function extractPdfText(
-  buffer
-) {
-  if (
-    !buffer?.length
-  ) {
+  if (header !== "%PDF-") {
+    throw new Error("The uploaded file is not a valid PDF.");
+  }
+
+  if (!PDFParseClass) {
     throw new Error(
-      "The uploaded PDF is empty."
+      "PDF parsing is unavailable. Install pdf-parse@2.4.5 and redeploy."
     );
   }
 
-  const header =
-    buffer
-      .subarray(0, 5)
-      .toString("latin1");
-
-  if (
-    header !== "%PDF-"
-  ) {
-    throw new Error(
-      "The uploaded file is not a valid PDF."
-    );
-  }
-
-  let text = "";
+  let parser = null;
 
   try {
+    // pdf-parse v2 API
+    parser = new PDFParseClass({
+      data: buffer,
+    });
+
+    const result = await parser.getText();
+
+    const text = normalizeResumeText(
+      result?.text || ""
+    );
+
+    console.log("pdf-parse extraction:", {
+      pages:
+        result?.total ??
+        result?.numpages ??
+        "unknown",
+      characters: text.length,
+    });
+
+    if (text.length <= 30) {
+      throw new Error(
+        "pdf-parse returned little or no readable text."
+      );
+    }
+
+    return text;
+  } catch (error) {
+    console.error(
+      "pdf-parse PDF extraction failed:",
+      error?.stack || error
+    );
+
     if (
-      pdfParseFunction
+      String(error?.message || "").includes(
+        "little or no readable text"
+      )
     ) {
-      const result =
-        await pdfParseFunction(
-          buffer
-        );
+      throw new Error(
+        "Could not extract readable text from this PDF. If it is scanned/image-only, OCR is required."
+      );
+    }
 
-      text =
-        result?.text || "";
-    } else if (
-      PDFParseClass
+    throw new Error(
+      `Could not read this PDF: ${
+        error?.message ||
+        "Unknown PDF parsing error"
+      }`
+    );
+  } finally {
+    if (
+      parser &&
+      typeof parser.destroy === "function"
     ) {
-      const parser =
-        new PDFParseClass({
-          data: buffer,
-        });
-
       try {
-        const result =
-          await parser.getText();
-
-        text =
-          result?.text || "";
-      } finally {
-        if (
-          typeof parser.destroy ===
-          "function"
-        ) {
-          await parser.destroy();
-        }
+        await parser.destroy();
+      } catch (destroyError) {
+        console.warn(
+          "pdf-parse cleanup warning:",
+          destroyError?.message ||
+            destroyError
+        );
       }
     }
-  } catch (error) {
-    console.warn(
-      "Primary PDF parser failed:",
-      error?.message || error
-    );
   }
-
-  text =
-    normalizeResumeText(
-      text
-    );
-
-  if (!text) {
-    text =
-      fallbackPdfText(
-        buffer
-      );
-  }
-
-  if (!text) {
-    throw new Error(
-      "Could not extract readable text from this PDF. If it is a scanned/image-only PDF, please use a text-based PDF or DOCX."
-    );
-  }
-
-  return text;
 }
 
 /* =========================================================
