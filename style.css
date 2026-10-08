@@ -3308,3 +3308,54 @@ button[type="submit"] {
         ) !important;
     }
 }
+
+/* =========================================================
+   MOBILE FEATURE CARDS — 2 CARDS PER ROW
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    /* Change the feature/card container to a 2-column grid */
+    .features-grid,
+    .feature-grid,
+    .cards-grid,
+    .features,
+    .feature-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 14px !important;
+    }
+
+    /* Make each card fit nicely inside the smaller column */
+    .feature-card,
+    .feature,
+    .card {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding: 22px 16px !important;
+    }
+
+    /* Smaller icon on mobile */
+    .feature-card .icon,
+    .feature .icon,
+    .card .icon {
+        width: 48px !important;
+        height: 48px !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* Card heading */
+    .feature-card h3,
+    .feature h3,
+    .card h3 {
+        font-size: 16px !important;
+        line-height: 1.25 !important;
+    }
+
+    /* Card description */
+    .feature-card p,
+    .feature p,
+    .card p {
+        font-size: 12px !important;
+        line-height: 1.55 !important;
+    }
+}
