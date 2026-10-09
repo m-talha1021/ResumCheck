@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=2" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 
@@ -473,6 +473,29 @@
             <p id="loadingStep" aria-live="polite">Reading document structure...</p>
         </div>
     </div>
+    <script>
+      (() => {
+        const menuButton = document.getElementById("menuBtn");
+        const mobileNav = document.getElementById("mobileNav");
+        if (!menuButton || !mobileNav) return;
+        menuButton.addEventListener("click", () => {
+          const isOpen = mobileNav.classList.toggle("open");
+          menuButton.setAttribute("aria-expanded", String(isOpen));
+          menuButton.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+          const icon = menuButton.querySelector("i");
+          if (icon) icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+        });
+        mobileNav.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", () => {
+            mobileNav.classList.remove("open");
+            menuButton.setAttribute("aria-expanded", "false");
+            menuButton.setAttribute("aria-label", "Open navigation menu");
+            const icon = menuButton.querySelector("i");
+            if (icon) icon.className = "fa-solid fa-bars";
+          });
+        });
+      })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
