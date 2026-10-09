@@ -2247,3 +2247,91 @@ footer {
         transform: none;
     }
 }
+
+/* =========================================================
+   RESUMCHECK — BRIGHT, COLORFUL BACKGROUND FINISH
+   Vivid but soft gradients: violet, sky blue, aqua, coral & rose.
+   Keeps cards readable and adapts to dark mode.
+   ========================================================= */
+body {
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(ellipse at 3% 12%, rgba(129, 140, 248, .25) 0%, transparent 31%),
+        radial-gradient(ellipse at 96% 8%, rgba(56, 189, 248, .20) 0%, transparent 29%),
+        radial-gradient(ellipse at 84% 43%, rgba(232, 121, 249, .15) 0%, transparent 30%),
+        radial-gradient(ellipse at 5% 66%, rgba(45, 212, 191, .18) 0%, transparent 32%),
+        radial-gradient(ellipse at 75% 92%, rgba(251, 146, 60, .14) 0%, transparent 29%),
+        linear-gradient(135deg, #f8f7ff 0%, #f0f7ff 34%, #effdfa 68%, #fff5f8 100%);
+    background-attachment: fixed;
+}
+
+.hero {
+    background:
+        radial-gradient(ellipse at 78% 12%, rgba(129, 140, 248, .30), transparent 34%),
+        radial-gradient(ellipse at 7% 70%, rgba(45, 212, 191, .22), transparent 32%),
+        radial-gradient(ellipse at 93% 85%, rgba(244, 114, 182, .18), transparent 30%),
+        linear-gradient(125deg, rgba(239, 246, 255, .72), rgba(250, 245, 255, .58) 52%, rgba(236, 253, 245, .64));
+}
+
+.section.white {
+    background: linear-gradient(120deg, rgba(255, 255, 255, .82), rgba(245, 243, 255, .78) 48%, rgba(240, 253, 250, .80));
+}
+
+.section.gray {
+    background: linear-gradient(120deg, rgba(224, 231, 255, .62), rgba(207, 250, 254, .48) 48%, rgba(252, 231, 243, .54));
+}
+
+.upload-card,
+.hero-preview,
+.feature,
+.about-card,
+.about-features>div,
+.contact-card,
+.contact-info>div,
+.breakdown,
+.insight {
+    backdrop-filter: blur(14px);
+}
+
+.result-cta {
+    background: linear-gradient(115deg, #4338ca 0%, #7c3aed 48%, #db2777 100%);
+    box-shadow: 0 16px 40px rgba(124, 58, 237, .20);
+}
+
+footer {
+    background: linear-gradient(115deg, rgba(224, 231, 255, .90), rgba(204, 251, 241, .84) 52%, rgba(252, 231, 243, .88));
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #0c1020;
+        background-image:
+            radial-gradient(ellipse at 3% 12%, rgba(99, 102, 241, .25) 0%, transparent 31%),
+            radial-gradient(ellipse at 96% 8%, rgba(14, 165, 233, .18) 0%, transparent 29%),
+            radial-gradient(ellipse at 84% 43%, rgba(192, 38, 211, .14) 0%, transparent 30%),
+            radial-gradient(ellipse at 5% 66%, rgba(20, 184, 166, .14) 0%, transparent 32%),
+            radial-gradient(ellipse at 75% 92%, rgba(249, 115, 22, .09) 0%, transparent 29%),
+            linear-gradient(135deg, #0c1020 0%, #11152b 42%, #0b2027 75%, #211324 100%);
+        background-attachment: fixed;
+    }
+
+    .hero {
+        background:
+            radial-gradient(ellipse at 78% 12%, rgba(99, 102, 241, .23), transparent 34%),
+            radial-gradient(ellipse at 7% 70%, rgba(20, 184, 166, .15), transparent 32%),
+            radial-gradient(ellipse at 93% 85%, rgba(219, 39, 119, .12), transparent 30%),
+            transparent;
+    }
+
+    .section.white {
+        background: linear-gradient(120deg, rgba(19, 25, 43, .88), rgba(35, 28, 59, .72) 48%, rgba(13, 40, 45, .78));
+    }
+
+    .section.gray {
+        background: linear-gradient(120deg, rgba(49, 46, 129, .24), rgba(8, 145, 178, .14) 48%, rgba(157, 23, 77, .15));
+    }
+
+    footer {
+        background: linear-gradient(115deg, rgba(49, 46, 129, .28), rgba(15, 118, 110, .20) 52%, rgba(157, 23, 77, .20));
+    }
+}
