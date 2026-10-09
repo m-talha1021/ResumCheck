@@ -835,6 +835,7 @@ img { max-width: 100%; }
   min-height: 54px;
   margin-top: 18px;
   border: 0;
+  padding-left: 450px;
   border-radius: 15px;
   color: #fff;
   background: linear-gradient(135deg, var(--blue), var(--purple));
