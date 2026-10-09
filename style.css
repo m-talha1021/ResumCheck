@@ -1635,7 +1635,9 @@ footer {
     flex-direction: column;
     padding: 20px;
   }
-
+   .analyze-btn{
+      margin-left: 150px;
+   }
   .cta-actions {
     width: 100%;
     flex-direction: column;
