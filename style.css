@@ -812,3 +812,6 @@ section:nth-of-type(even) {
     display: none !important;
   }
 }
+.footer-bottom > container{
+  align-items: center;
+}
