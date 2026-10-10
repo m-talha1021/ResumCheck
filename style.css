@@ -721,8 +721,16 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
   }
 }
 
-@media (max-width: 768px) {
-  .quick-links {
-    display: none !important;
-  }
+.nav-cta,
+.btn.primary,
+.analyze-btn {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.nav-cta:hover,
+.btn.primary:hover,
+.analyze-btn:hover {
+  background-color: #1e40af !important;
+  border-color: #1e40af !important;
 }
