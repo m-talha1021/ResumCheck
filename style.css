@@ -720,3 +720,9 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
     border-color: #cbdff3 !important;
   }
 }
+
+@media (max-width: 768px) {
+  .quick-links {
+    display: none !important;
+  }
+}
