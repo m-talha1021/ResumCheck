@@ -782,3 +782,17 @@ section:nth-of-type(even) {
     margin-bottom: 20px;
   }
 }
+
+
+
+
+
+/* Dark blue navbar logo icon */
+.brand > i.fa-file-waveform {
+  color: #1d4ed8 !important;
+}
+
+/* Dark blue footer logo icon */
+.footer-brand > i.fa-file-waveform {
+  color: #1d4ed8 !important;
+}
