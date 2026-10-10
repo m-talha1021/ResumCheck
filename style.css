@@ -814,4 +814,5 @@ section:nth-of-type(even) {
 }
 .footer-bottom > container{
   align-items: center;
+  justify-content: center;
 }
