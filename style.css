@@ -865,7 +865,7 @@ input::placeholder {
     justify-content: center;
     gap: 12px;
     width: 270px;
-    margin-left: 400px;
+    margin-left: 340px;
     min-height: 53px;
     margin-top: 19px;
     padding: 13px 20px;
@@ -1436,8 +1436,8 @@ footer {
         grid-template-columns: 1fr
     }
    .analyze-btn{
-       width: 270px;
-       margin-left: 37px;
+       width: 230px;
+       margin-left: 30px;
    }
     .hero-copy {
         max-width: 720px
