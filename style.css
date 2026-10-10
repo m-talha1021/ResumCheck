@@ -738,18 +738,18 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
 /* Dark blue logo icon */
 .brand-icon,
 .logo-icon {
-  background-color: #1d4ed8;
+  background-color: #1d4ed8 !important;
 }
 
 /* Dark blue hero heading */
 .hero h1 span,
 .hero-title span {
-  color: #1d4ed8;
+  color: #1d4ed8 !important;
 }
 
 /* Visually separate website sections */
 section {
-  border-bottom: 1px solid #dbeafe;
+  border-bottom: 1px solid #5999f0;
   padding-bottom: 48px;
   margin-bottom: 32px;
 }
