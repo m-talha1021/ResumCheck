@@ -799,7 +799,6 @@ section:nth-of-type(even) {
 }
 
 .brand > i.fa-file-waveform {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   background: #1d4ed8 !important;
@@ -812,8 +811,7 @@ section:nth-of-type(even) {
     display: none !important;
   }
 }
-footer-brand > i.fa-file-waveform{
-  display: inline-flex;
+.footer-brand > i.fa-file-waveform {
   align-items: center;
   justify-content: center;
   background: #1d4ed8 !important;
