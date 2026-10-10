@@ -789,10 +789,15 @@ section:nth-of-type(even) {
 
 /* Dark blue navbar logo icon */
 .brand > i.fa-file-waveform {
+  color: white !important;
+}
+.brand{
   color: #1d4ed8 !important;
 }
-
 /* Dark blue footer logo icon */
 .footer-brand > i.fa-file-waveform {
+  color: white !important;
+}
+.footer-brand{
   color: #1d4ed8 !important;
 }
