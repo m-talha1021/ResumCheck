@@ -806,3 +806,9 @@ section:nth-of-type(even) {
   color: #ffffff !important;
   border-radius: 12px;
 }
+
+@media (max-width: 768px) {
+  .footer-grid > div:nth-child(2) {
+    display: none !important;
+  }
+}
