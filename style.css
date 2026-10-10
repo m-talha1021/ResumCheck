@@ -865,7 +865,7 @@ input::placeholder {
     justify-content: center;
     gap: 12px;
     width: 270px;
-    margin-left: 340px;
+    margin-left: 280px;
     min-height: 53px;
     margin-top: 19px;
     padding: 13px 20px;
@@ -1437,7 +1437,7 @@ footer {
     }
    .analyze-btn{
        width: 230px;
-       margin-left: 30px;
+       margin-left: 34px;
    }
     .hero-copy {
         max-width: 720px
