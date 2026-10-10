@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ResumCheck — AI Resume ATS Checker</titlea>
+    <title>ResumCheck — AI Resume ATS Checker</title>
     <link rel="shortcut icon" href="favicon.png" type="image/png" />
     <meta name="description" content="AI-powered Resume ATS Checker and analyzer." />
     <meta name="google-site-verification" content="mWn0cSu9P7BHutGH2N9p3LavgMGnqorKv9FiXFhp0Z0" />
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=3" />
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 
@@ -29,7 +29,7 @@
                     <li><a href="#contact">Contact Us</a></li>
                 </ul>
                 <a href="#upload" class="nav-cta">Analyze Resume</a>
-                <button class="hamburger" id="menuBtn" type="button" onclick="toggleMobileMenu(event)" aria-label="Open navigation menu"
+                <button class="hamburger" id="menuBtn" type="button" aria-label="Open navigation menu"
                     aria-expanded="false">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -473,30 +473,6 @@
             <p id="loadingStep" aria-live="polite">Reading document structure...</p>
         </div>
     </div>
-    <script>
-      // Inline handler ensures the menu works even if other site scripts fail.
-      window.toggleMobileMenu = function (event) {
-        if (event) { event.preventDefault(); event.stopPropagation(); }
-        const button = document.getElementById('menuBtn');
-        const menu = document.getElementById('mobileNav');
-        if (!button || !menu) return;
-        const open = !menu.classList.contains('open');
-        menu.classList.toggle('open', open);
-        button.setAttribute('aria-expanded', String(open));
-        button.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
-        const icon = button.querySelector('i');
-        if (icon) icon.className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
-      };
-      document.addEventListener('DOMContentLoaded', function () {
-        const menu = document.getElementById('mobileNav');
-        const button = document.getElementById('menuBtn');
-        if (!menu || !button) return;
-        menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-          if (menu.classList.contains('open')) window.toggleMobileMenu();
-        }));
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('open')) window.toggleMobileMenu(); });
-      });
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
