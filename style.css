@@ -738,11 +738,31 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
 /* Dark blue logo icon */
 .brand-icon,
 .logo-icon {
-  background-color: #1d4ed8 !important;
+  background-color: #1d4ed8;
 }
 
 /* Dark blue hero heading */
 .hero h1 span,
 .hero-title span {
-  color: #1d4ed8 !important;
+  color: #1d4ed8;
+}
+
+/* Visually separate website sections */
+section {
+  border-bottom: 1px solid #dbeafe;
+  padding-bottom: 48px;
+  margin-bottom: 32px;
+}
+
+/* Subtle alternating section backgrounds */
+section:nth-of-type(even) {
+  background-color: #f8fbff;
+}
+
+/* Keep the layout clean on mobile */
+@media (max-width: 768px) {
+  section {
+    padding-bottom: 32px;
+    margin-bottom: 20px;
+  }
 }
