@@ -734,3 +734,15 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
   background-color: #1e40af !important;
   border-color: #1e40af !important;
 }
+
+/* Dark blue logo icon */
+.brand-icon,
+.logo-icon {
+  background-color: #1d4ed8 !important;
+}
+
+/* Dark blue hero heading */
+.hero h1 span,
+.hero-title span {
+  color: #1d4ed8 !important;
+}
