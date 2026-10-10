@@ -812,7 +812,11 @@ section:nth-of-type(even) {
     display: none !important;
   }
 }
-.footer-bottom container{
+footer-brand > i.fa-file-waveform{
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-radius: 12px;
 }
