@@ -394,8 +394,8 @@ footer {
   --ink: #111827;
   --muted: #4b5563;
   --line: #dbeafe;
-  --brand: #55aaf2;
-  --brand-2: #2585d8;
+  --brand: #1d4ed8;
+  --brand-2: #1e40af;
   --brand-soft: #eaf5ff;
   --green: #16805d;
   --green-soft: #e7f8f0;
@@ -435,15 +435,15 @@ p, small, .desktop-nav a, .mobile-nav a, .footer-grid p,
 .hero h1 span, .eyebrow, .section-head > span,
 .desktop-nav a:hover, .mobile-nav a:hover, .footer-grid a:hover,
 .about-features i, .contact-info > div > i {
-  color: #2585d8;
+  color: #1e40af;
 }
 .brand i, .footer-brand i {
-  background: #55aaf2;
+  background: #1d4ed8;
   box-shadow: 0 5px 14px rgba(85,170,242,.22);
 }
 .nav-cta, .btn.primary, .analyze-btn {
   color: #ffffff !important;
-  background: #55aaf2 !important;
+  background: #1d4ed8 !important;
   box-shadow: 0 6px 16px rgba(85,170,242,.20);
 }
 .nav-cta:hover, .btn.primary:hover, .analyze-btn:hover { background: #2585d8 !important; }
@@ -475,10 +475,10 @@ p, small, .desktop-nav a, .mobile-nav a, .footer-grid p,
 }
 .preview-icon, .breakdown h3 i, .breakdown-top strong, .chip,
 .insight.missing header > div {
-  color: #2585d8;
+  color: #1e40af;
 }
 .sample-ring, #resultSection .score-ring {
-  background: conic-gradient(#55aaf2 0%, #2585d8 78%, #eaf5ff 78%);
+  background: conic-gradient(#1d4ed8 0%, #1e40af 78%, #eaf5ff 78%);
 }
 .mini-bars em, .progress-fill, .progress-track > * {
   background: #55aaf2;
