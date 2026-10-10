@@ -737,14 +737,30 @@ input::placeholder, textarea::placeholder { color: #6b7280 !important; }
 
 /* Dark blue logo icon */
 .brand-icon,
-.logo-icon {
+.logo-icon,
+.brand-mark {
   background-color: #1d4ed8 !important;
 }
 
-/* Dark blue hero heading */
+/* Dark blue heading text */
 .hero h1 span,
 .hero-title span {
   color: #1d4ed8 !important;
+}
+
+/* Dark blue buttons */
+.nav-cta,
+.btn.primary,
+.analyze-btn {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.nav-cta:hover,
+.btn.primary:hover,
+.analyze-btn:hover {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
 }
 
 /* Visually separate website sections */
