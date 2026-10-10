@@ -2339,3 +2339,65 @@ footer {
         background: linear-gradient(115deg, rgba(49, 46, 129, .28), rgba(15, 118, 110, .20) 52%, rgba(157, 23, 77, .20));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Fix mobile upload area tap and blur effect */
+@media (hover: none) and (pointer: coarse) {
+  .upload-area,
+  .upload-box,
+  .drop-zone,
+  .file-upload,
+  .upload-container,
+  #upload-area,
+  #drop-zone {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none;
+    outline: none;
+    box-shadow: none;
+    filter: none;
+    transition: none !important;
+  }
+
+  .upload-area:hover,
+  .upload-box:hover,
+  .drop-zone:hover,
+  .file-upload:hover,
+  .upload-container:hover,
+  #upload-area:hover,
+  #drop-zone:hover {
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .upload-area:active,
+  .upload-box:active,
+  .drop-zone:active,
+  .file-upload:active,
+  .upload-container:active,
+  #upload-area:active,
+  #drop-zone:active {
+    box-shadow: none !important;
+    filter: none !important;
+    background-color: inherit;
+    transform: none !important;
+  }
+}
