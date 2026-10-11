@@ -3116,6 +3116,7 @@ nav a:not(.brand):not(.nav-cta):hover {
   width: 100% !important;
   text-align: center !important;
   font-size: 16px;
+  border-top: 0.5px #1d4ed8 solid !important;
 }
 
 .footer-bottom p {
