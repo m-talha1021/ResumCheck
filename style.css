@@ -3086,3 +3086,15 @@ section:nth-of-type(even) {
   color: #1d4ed8 !important;
   transition: color 0.2s ease;
 }
+
+/* Navbar link hover effect */
+.nav-links a {
+  display: inline-block;
+  transition: color 0.25s ease, transform 0.25s ease;
+  transform-origin: center;
+}
+
+.nav-links a:hover {
+  color: #1d4ed8 !important;
+  transform: scale(1.1);
+}
