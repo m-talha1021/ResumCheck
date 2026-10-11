@@ -3078,3 +3078,11 @@ section:nth-of-type(even) {
   color: #ffffff !important;
   border-radius: 12px;
 }
+
+/* Dark blue navbar link hover */
+.brand:hover,
+.navbar a:not(.nav-cta):hover,
+.nav-links a:hover {
+  color: #1d4ed8 !important;
+  transition: color 0.2s ease;
+}
