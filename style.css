@@ -3115,11 +3115,13 @@ nav a:not(.brand):not(.nav-cta):hover {
   align-items: center !important;
   width: 100% !important;
   text-align: center !important;
+  font-size: 16px;
 }
 
 .footer-bottom p {
   width: 100% !important;
   margin-left: auto !important;
+  font-size: 16px !important;
   margin-right: auto !important;
   text-align: center !important;
 }
