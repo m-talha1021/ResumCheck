@@ -3087,14 +3087,15 @@ section:nth-of-type(even) {
   transition: color 0.2s ease;
 }
 
-/* Navbar link hover effect */
-.nav-links a {
-  display: inline-block;
-  transition: color 0.25s ease, transform 0.25s ease;
+/* Smooth navbar link enlargement */
+nav a:not(.brand):not(.nav-cta) {
+  display: inline-block !important;
+  transition: transform 0.25s ease, color 0.25s ease !important;
   transform-origin: center;
 }
 
-.nav-links a:hover {
+nav a:not(.brand):not(.nav-cta):hover {
   color: #1d4ed8 !important;
-  transform: scale(1.1);
+  transform: scale(1.15) !important;
+}
 }
