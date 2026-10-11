@@ -3147,3 +3147,7 @@ main > section:last-of-type,
   border-bottom: none !important;
   box-shadow: none !important;
 }
+.navbar{
+  border-bottom: 0.5px #7eb5fc solid !important;
+  shadow-bottom: 0.5px #7eb5fc !important;
+}
