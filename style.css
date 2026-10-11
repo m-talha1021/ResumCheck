@@ -3090,9 +3090,7 @@ section:nth-of-type(even) {
 /* Smooth navbar link enlargement */
 nav a:not(.brand):not(.nav-cta) {
   display: inline-block !important;
-  /*transition: transform 0.25s ease, color 0.25s ease !important;*/
-  transition: color 0.4s ease-in-out,
-              transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.25s ease, color 0.25s ease !important;
   transform-origin: center;
 }
 
