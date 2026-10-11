@@ -3107,3 +3107,19 @@ nav a:not(.brand):not(.nav-cta):hover {
   text-align: center !important;
   width: 100%;
 }
+
+/* Center footer copyright text on desktop and mobile */
+.footer-bottom {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.footer-bottom p {
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
