@@ -3125,3 +3125,24 @@ nav a:not(.brand):not(.nav-cta):hover {
   margin-right: auto !important;
   text-align: center !important;
 }
+
+
+
+/* Remove divider above footer */
+footer {
+  border-top: none !important;
+  box-shadow: none !important;
+  margin-top: 0 !important;
+}
+
+footer::before,
+footer::after {
+  display: none !important;
+}
+
+/* Remove bottom border from the preceding section */
+main > section:last-of-type,
+#contact {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
