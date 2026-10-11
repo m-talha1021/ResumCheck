@@ -3099,3 +3099,11 @@ nav a:not(.brand):not(.nav-cta):hover {
   transform: scale(1.15) !important;
 }
 }
+
+.footer-bottom {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: 100%;
+}
