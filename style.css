@@ -3098,12 +3098,12 @@ nav a:not(.brand):not(.nav-cta):hover {
   color: #1d4ed8 !important;
   transform: scale(1.15) !important;
 }
+/* Center footer copyright text */
+.footer-bottom {
+  text-align: center !important;
 }
 
-.footer-bottom {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+.footer-bottom p {
   text-align: center !important;
   width: 100%;
 }
