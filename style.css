@@ -3196,3 +3196,26 @@ main > section:last-of-type,
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
 }
+
+
+/* Center and shorten the Analyze My Resume button */
+#analyzeBtn,
+.analyze-btn,
+button[type="submit"] {
+    display: block;
+    width: 280px;
+    max-width: 90%;
+    margin: 20px auto;
+    padding: 14px 20px;
+    border-radius: 14px;
+}
+
+/* Keep the button responsive on mobile */
+@media (max-width: 480px) {
+    #analyzeBtn,
+    .analyze-btn,
+    button[type="submit"] {
+        width: 240px;
+        max-width: 85%;
+    }
+}
