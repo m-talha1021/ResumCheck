@@ -695,26 +695,21 @@
     );
   }
 
-  /*
-   * PDF report.
-   *
-   * Load jsPDF on demand if index.html did not load it
-   * or if the original CDN failed.
+   /*
+   * PREMIUM PDF REPORT
+   * Modern navy + teal design with score cards,
+   * progress bars, organized feedback and page numbers.
    */
+
   let jsPDFLoadPromise = null;
 
   function loadJsPDF() {
-    const existingJsPDF =
-      window.jspdf?.jsPDF ||
-      window.jsPDF;
+    const existing =
+      window.jspdf?.jsPDF || window.jsPDF;
 
-    if (existingJsPDF) {
-      return Promise.resolve(existingJsPDF);
-    }
+    if (existing) return Promise.resolve(existing);
 
-    if (jsPDFLoadPromise) {
-      return jsPDFLoadPromise;
-    }
+    if (jsPDFLoadPromise) return jsPDFLoadPromise;
 
     const sources = [
       "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js",
@@ -726,43 +721,29 @@
         try {
           await new Promise((resolve, reject) => {
             const script = document.createElement("script");
-
             script.src = src;
             script.async = true;
-
             script.onload = resolve;
-
             script.onerror = () => {
               script.remove();
-
-              reject(
-                new Error(
-                  `Could not load PDF library from ${src}`
-                )
-              );
+              reject(new Error("Unable to load " + src));
             };
-
             document.head.appendChild(script);
           });
 
-          const loadedJsPDF =
-            window.jspdf?.jsPDF ||
-            window.jsPDF;
+          const jsPDF =
+            window.jspdf?.jsPDF || window.jsPDF;
 
-          if (loadedJsPDF) {
-            return loadedJsPDF;
-          }
+          if (jsPDF) return jsPDF;
         } catch (error) {
-          console.warn(
-            "ResumCheck: jsPDF source failed:",
-            src,
-            error
-          );
+          console.warn("jsPDF loading failed:", error);
         }
       }
 
+      jsPDFLoadPromise = null;
+
       throw new Error(
-        "The PDF report library could not be loaded. Check your internet connection or add jsPDF to index.html."
+        "PDF library could not load. Check your internet connection and try again."
       );
     })();
 
@@ -772,140 +753,638 @@
   const downloadReport = $("#downloadReport");
 
   if (downloadReport) {
-    downloadReport.addEventListener(
-      "click",
-      async () => {
-        if (!currentAnalysis) {
-          showError("Analyze a resume first.");
-          return;
+    downloadReport.addEventListener("click", async () => {
+      if (!currentAnalysis) {
+        showError("Analyze a resume first.");
+        return;
+      }
+
+      try {
+        downloadReport.disabled = true;
+        clearError();
+
+        const jsPDF = await loadJsPDF();
+
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "pt",
+          format: "a4",
+        });
+
+        // Page dimensions and layout
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 42;
+        const contentWidth = pageWidth - margin * 2;
+        const bottomLimit = pageHeight - 55;
+
+        let y = 0;
+        let pageNumber = 1;
+
+        // ResumCheck colors
+        const navy = [22, 38, 67];
+        const teal = [20, 166, 160];
+        const dark = [39, 49, 66];
+        const muted = [104, 116, 135];
+        const light = [243, 247, 250];
+        const border = [225, 232, 239];
+        const green = [36, 139, 100];
+        const red = [195, 77, 77];
+        const amber = [201, 139, 42];
+        const white = [255, 255, 255];
+
+        const data = currentAnalysis;
+
+        const score = Math.max(
+          0,
+          Math.min(100, Number(data.score) || 0)
+        );
+
+        const candidate =
+          data.candidateName || "Candidate";
+
+        const fileName =
+          data.fileName ||
+          data.resumeFileName ||
+          "Pasted Resume";
+
+        const breakdown = data.breakdown || {};
+
+        function setColor(color) {
+          doc.setTextColor(...color);
         }
 
-        try {
-          downloadReport.disabled = true;
-          clearError();
+        function fillColor(color) {
+          doc.setFillColor(...color);
+        }
 
-          // Ensure jsPDF is available before creating the report.
-          const jsPDF = await loadJsPDF();
+        function drawColor(color) {
+          doc.setDrawColor(...color);
+        }
 
-          const doc = new jsPDF({
-            unit: "pt",
-            format: "a4",
-          });
+        function roundedRect(x, top, w, h, radius, color) {
+          fillColor(color);
+          doc.roundedRect(
+            x,
+            top,
+            w,
+            h,
+            radius,
+            radius,
+            "F"
+          );
+        }
 
-          const margin = 40;
-          let y = 48;
+        function ensureSpace(height) {
+          if (y + height > bottomLimit) {
+            doc.addPage();
+            pageNumber++;
+            drawPageHeader();
+            y = 82;
+          }
+        }
 
-          const addText = (text, size = 10) => {
-            doc.setFontSize(size);
+        function drawPageHeader() {
+          fillColor(navy);
+          doc.rect(0, 0, pageWidth, 8, "F");
+
+          if (pageNumber > 1) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            setColor(navy);
+            doc.text("RESUMCHECK", margin, 34);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            setColor(muted);
+            doc.text(
+              "ATS RESUME ANALYSIS",
+              pageWidth - margin,
+              34,
+              { align: "right" }
+            );
+
+            drawColor(border);
+            doc.setLineWidth(0.7);
+            doc.line(margin, 46, pageWidth - margin, 46);
+          }
+        }
+
+        function addWrappedText(
+          text,
+          x,
+          top,
+          width,
+          fontSize = 10,
+          color = dark,
+          lineHeight = 1.45
+        ) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontSize);
+          setColor(color);
+
+          const lines = doc.splitTextToSize(
+            String(text ?? ""),
+            width
+          );
+
+          const lineStep = fontSize * lineHeight;
+
+          doc.text(lines, x, top);
+
+          return lines.length * lineStep;
+        }
+
+        function addSectionTitle(title, subtitle = "") {
+          ensureSpace(subtitle ? 52 : 34);
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(15);
+          setColor(navy);
+          doc.text(title, margin, y + 15);
+
+          fillColor(teal);
+          doc.roundedRect(
+            margin,
+            y + 23,
+            34,
+            3,
+            1.5,
+            1.5,
+            "F"
+          );
+
+          let used = 36;
+
+          if (subtitle) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            setColor(muted);
+            doc.text(subtitle, margin, y + 43);
+            used = 54;
+          }
+
+          y += used;
+        }
+
+        function addFeedbackSection(title, items, accent) {
+          const list = Array.isArray(items)
+            ? items.filter(Boolean)
+            : [];
+
+          addSectionTitle(title);
+
+          if (!list.length) {
+            ensureSpace(46);
+            roundedRect(
+              margin,
+              y,
+              contentWidth,
+              38,
+              7,
+              light
+            );
+
+            addWrappedText(
+              "No items were returned for this section.",
+              margin + 13,
+              y + 23,
+              contentWidth - 26,
+              9,
+              muted
+            );
+
+            y += 50;
+            return;
+          }
+
+          list.forEach((item, index) => {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
 
             const lines = doc.splitTextToSize(
-              String(text || ""),
-              515
+              String(item),
+              contentWidth - 54
             );
 
-            if (
-              y + lines.length * (size + 4) >
-              800
-            ) {
-              doc.addPage();
-              y = 48;
-            }
-
-            doc.text(lines, margin, y);
-
-            y +=
-              lines.length * (size + 4) +
-              8;
-          };
-
-          addText(
-            "ResumCheck — ATS Resume Report",
-            18
-          );
-
-          addText(
-            `Resume: ${currentAnalysis.fileName || "Pasted Resume"}`,
-            11
-          );
-
-          addText(
-            `Candidate: ${currentAnalysis.candidateName || "Candidate"}`,
-            11
-          );
-
-          addText(
-            `ATS Score: ${currentAnalysis.score}% — ${currentAnalysis.scoreLabel || ""}`,
-            14
-          );
-
-          addText("Score Breakdown", 13);
-
-          for (const [key, label, max] of [
-            ["formatting", "Formatting", 20],
-            ["keywords", "Keywords", 25],
-            ["experience", "Experience", 20],
-            ["projects", "Projects", 15],
-            ["education", "Education", 10],
-            ["professionalism", "Professionalism", 10],
-          ]) {
-            addText(
-              `${label}: ${currentAnalysis.breakdown?.[key] || 0}/${max}`,
-              10
+            const lineHeight = 14;
+            const cardHeight = Math.max(
+              43,
+              22 + lines.length * lineHeight
             );
-          }
 
-          const sections = [
-            [
-              "Strengths",
-              currentAnalysis.strengths,
-            ],
-            [
-              "Areas to Fix",
-              currentAnalysis.weaknesses,
-            ],
-            [
-              "Missing Skills",
-              currentAnalysis.missingSkills,
-            ],
-            [
-              "Actionable Suggestions",
-              currentAnalysis.suggestions,
-            ],
-          ];
+            ensureSpace(cardHeight + 7);
 
-          for (const [title, items] of sections) {
-            addText(title, 13);
+            roundedRect(
+              margin,
+              y,
+              contentWidth,
+              cardHeight,
+              7,
+              light
+            );
 
-            (
-              items.length
-                ? items
-                : ["No AI items returned."]
-            ).forEach((item, index) => {
-              addText(
-                `${index + 1}. ${item}`,
-                10
-              );
-            });
-          }
+            fillColor(accent);
+            doc.roundedRect(
+              margin,
+              y,
+              4,
+              cardHeight,
+              2,
+              2,
+              "F"
+            );
 
-          doc.save("ResumCheck-ATS-Report.pdf");
-        } catch (error) {
-          console.error(
-            "PDF report error:",
-            error
-          );
+            fillColor(white);
+            doc.circle(
+              margin + 20,
+              y + 20,
+              9,
+              "F"
+            );
 
-          showError(
-            error?.message ||
-            "Could not generate the PDF report."
-          );
-        } finally {
-          downloadReport.disabled = false;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            setColor(accent);
+
+            doc.text(
+              String(index + 1),
+              margin + 20,
+              y + 23,
+              { align: "center" }
+            );
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+            setColor(dark);
+
+            doc.text(
+              lines,
+              margin + 37,
+              y + 19
+            );
+
+            y += cardHeight + 7;
+          });
+
+          y += 5;
         }
-      }
-    );
-  }
 
+        /*
+         * PAGE 1: REPORT HEADER
+         */
+
+        fillColor(navy);
+        doc.rect(0, 0, pageWidth, 175, "F");
+
+        fillColor(teal);
+        doc.rect(0, 175, pageWidth, 5, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        setColor([130, 231, 221]);
+
+        doc.text("RESUMCHECK", margin, 43);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(25);
+        setColor(white);
+
+        doc.text(
+          "ATS Resume Report",
+          margin,
+          83
+        );
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        setColor([222, 231, 243]);
+
+        doc.text(
+          "Your resume analysis and improvement roadmap",
+          margin,
+          106
+        );
+
+        const displayFileName = doc.splitTextToSize(
+          "Resume: " + fileName,
+          contentWidth - 10
+        );
+
+        doc.setFontSize(9);
+        setColor(white);
+
+        doc.text(
+          displayFileName.slice(0, 2),
+          margin,
+          133
+        );
+
+        doc.setFontSize(9);
+        setColor([205, 219, 236]);
+
+        doc.text(
+          "Candidate: " + candidate,
+          margin,
+          157
+        );
+
+        y = 205;
+
+        /*
+         * ATS SCORE CARD
+         */
+
+        const scoreCardHeight = 132;
+
+        roundedRect(
+          margin,
+          y,
+          contentWidth,
+          scoreCardHeight,
+          12,
+          light
+        );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        setColor(muted);
+
+        doc.text(
+          "YOUR ATS READINESS SCORE",
+          margin + 19,
+          y + 25
+        );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(39);
+
+        const scoreColor =
+          score >= 80
+            ? green
+            : score >= 60
+              ? amber
+              : red;
+
+        setColor(scoreColor);
+
+        doc.text(
+          score + "%",
+          margin + 19,
+          y + 70
+        );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        setColor(navy);
+
+        doc.text(
+          data.scoreLabel || (
+            score >= 80
+              ? "Strong ATS readiness"
+              : score >= 60
+                ? "Room for improvement"
+                : "Needs improvement"
+          ),
+          margin + 120,
+          y + 48
+        );
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+
+        addWrappedText(
+          score >= 90
+            ? "Excellent result. Keep your resume tailored to each role."
+            : score >= 80
+              ? "Strong result. A few targeted refinements may help."
+              : score >= 60
+                ? "Review the recommendations below to strengthen your resume."
+                : "Focus on the priority improvements listed in this report.",
+          margin + 120,
+          y + 67,
+          contentWidth - 145,
+          9,
+          muted
+        );
+
+        // Score progress track
+        const trackX = margin + 19;
+        const trackY = y + 98;
+        const trackWidth = contentWidth - 38;
+
+        roundedRect(
+          trackX,
+          trackY,
+          trackWidth,
+          9,
+          4,
+          border
+        );
+
+        if (score > 0) {
+          roundedRect(
+            trackX,
+            trackY,
+            trackWidth * score / 100,
+            9,
+            4,
+            scoreColor
+          );
+        }
+
+        y += scoreCardHeight + 24;
+
+        /*
+         * SCORE BREAKDOWN
+         */
+
+        addSectionTitle(
+          "Score Breakdown",
+          "Performance across six resume quality categories"
+        );
+
+        const categories = [
+          ["Formatting", "formatting", 20],
+          ["Keywords", "keywords", 25],
+          ["Experience", "experience", 20],
+          ["Projects", "projects", 15],
+          ["Education", "education", 10],
+          ["Professionalism", "professionalism", 10],
+        ];
+
+        const gap = 10;
+        const cardWidth =
+          (contentWidth - gap) / 2;
+        const cardHeight = 67;
+
+        categories.forEach(([label, key, max], index) => {
+          const column = index % 2;
+          const row = Math.floor(index / 2);
+
+          const x =
+            margin + column * (cardWidth + gap);
+
+          const top =
+            y + row * (cardHeight + 9);
+
+          if (row === 0) {
+            ensureSpace(cardHeight + 10);
+          }
+
+          const value = Math.max(
+            0,
+            Math.min(
+              max,
+              Number(breakdown[key]) || 0
+            )
+          );
+
+          const ratio = max ? value / max : 0;
+
+          roundedRect(
+            x,
+            top,
+            cardWidth,
+            cardHeight,
+            8,
+            light
+          );
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          setColor(dark);
+
+          doc.text(label, x + 12, top + 19);
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          setColor(navy);
+
+          doc.text(
+            `${value}/${max}`,
+            x + cardWidth - 12,
+            top + 19,
+            { align: "right" }
+          );
+
+          roundedRect(
+            x + 12,
+            top + 32,
+            cardWidth - 24,
+            6,
+            3,
+            border
+          );
+
+          if (ratio > 0) {
+            roundedRect(
+              x + 12,
+              top + 32,
+              (cardWidth - 24) * ratio,
+              6,
+              3,
+              ratio >= 0.8 ? teal : amber
+            );
+          }
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          setColor(muted);
+
+          doc.text(
+            `${Math.round(ratio * 100)}% of category points`,
+            x + 12,
+            top + 53
+          );
+        });
+
+        y += 3 * (cardHeight + 9) + 8;
+
+        /*
+         * FEEDBACK SECTIONS
+         */
+
+        addFeedbackSection(
+          "Key Strengths",
+          data.strengths,
+          green
+        );
+
+        addFeedbackSection(
+          "Areas to Improve",
+          data.weaknesses,
+          red
+        );
+
+        addFeedbackSection(
+          "Missing Skills & Keywords",
+          data.missingSkills,
+          amber
+        );
+
+        addFeedbackSection(
+          "Actionable Recommendations",
+          data.suggestions,
+          teal
+        );
+
+        /*
+         * FOOTERS AND PAGE NUMBERS
+         */
+
+        const totalPages =
+          doc.internal.getNumberOfPages();
+
+        for (
+          let page = 1;
+          page <= totalPages;
+          page++
+        ) {
+          doc.setPage(page);
+
+          drawColor(border);
+          doc.setLineWidth(0.7);
+
+          doc.line(
+            margin,
+            pageHeight - 38,
+            pageWidth - margin,
+            pageHeight - 38
+          );
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          setColor(muted);
+
+          doc.text(
+            "ResumCheck | ATS Resume Analysis",
+            margin,
+            pageHeight - 23
+          );
+
+          doc.text(
+            `Page ${page} of ${totalPages}`,
+            pageWidth - margin,
+            pageHeight - 23,
+            { align: "right" }
+          );
+        }
+
+        doc.save("ResumCheck-ATS-Report.pdf");
+
+      } catch (error) {
+        console.error("PDF report error:", error);
+
+        showError(
+          error?.message ||
+          "Could not generate the PDF report."
+        );
+      } finally {
+        downloadReport.disabled = false;
+      }
+    });
+  }
   /*
    * Contact form.
    */
