@@ -3151,3 +3151,48 @@ main > section:last-of-type,
   border-bottom: 0.5px #7eb5fc solid !important;
   shadow-bottom: 0.5px #7eb5fc !important;
 }
+
+/* =====================================
+   CTA BUTTONS — BLUE HOVER EFFECT
+===================================== */
+
+.cta-actions #downloadReport,
+.cta-actions #newAnalysis {
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+    cursor: pointer;
+}
+
+/* Hover effect for both buttons */
+.cta-actions #downloadReport:hover,
+.cta-actions #newAnalysis:hover {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Keep icons white on hover */
+.cta-actions #downloadReport:hover i,
+.cta-actions #newAnalysis:hover i {
+    color: #ffffff !important;
+}
+
+/* Keyboard accessibility */
+.cta-actions #downloadReport:focus-visible,
+.cta-actions #newAnalysis:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.4);
+    outline-offset: 3px;
+}
+
+/* Click effect */
+.cta-actions #downloadReport:active,
+.cta-actions #newAnalysis:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
