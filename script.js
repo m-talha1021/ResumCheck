@@ -95,9 +95,7 @@
         Boolean(isLoading);
 
       const label =
-        analyzeButton.querySelector(
-          "span"
-        );
+        analyzeButton.querySelector("span");
 
       if (label) {
         label.textContent =
@@ -117,8 +115,7 @@
 
   function setLoadingStep(text) {
     if (loadingStep) {
-      loadingStep.textContent =
-        text;
+      loadingStep.textContent = text;
     }
   }
 
@@ -126,8 +123,7 @@
     if (!file) return false;
 
     const name =
-      String(file.name || "")
-        .toLowerCase();
+      String(file.name || "").toLowerCase();
 
     return (
       name.endsWith(".pdf") ||
@@ -139,8 +135,7 @@
   function updateSelectedFileUI(file) {
     if (!file) return;
 
-    const fileName =
-      $("#fileName");
+    const fileName = $("#fileName");
 
     if (fileName) {
       fileName.innerHTML =
@@ -168,8 +163,7 @@
       resumeText.value = "";
     }
 
-    const fileName =
-      $("#fileName");
+    const fileName = $("#fileName");
 
     if (fileName) {
       fileName.innerHTML =
@@ -185,10 +179,8 @@
   }
 
   /*
-   * IMPORTANT:
-   * We do NOT extract PDF/DOCX in the browser.
-   * The original File object is sent directly to /api/analyze.
-   * This eliminates the previous PDF.js loading failure.
+   * PDF and DOCX files are sent to the backend.
+   * The browser does not extract their text.
    */
   function selectFile(file) {
     if (!file) return;
@@ -202,10 +194,7 @@
       return;
     }
 
-    if (
-      file.size >
-      5 * 1024 * 1024
-    ) {
+    if (file.size > 5 * 1024 * 1024) {
       showError(
         "Resume file is too large. Maximum allowed size is 5 MB."
       );
@@ -213,12 +202,9 @@
     }
 
     selectedFile = file;
-    currentFileName =
-      file.name;
+    currentFileName = file.name;
 
-    updateSelectedFileUI(
-      file
-    );
+    updateSelectedFileUI(file);
 
     console.log(
       "ResumCheck: file selected:",
@@ -228,16 +214,13 @@
 
   /*
    * Native file picker.
-   * The label already has `for=fileInput`, so we do not call
-   * fileInput.click() from a label click. This avoids double dialogs.
+   * The label already has for="fileInput".
    */
   if (fileInput) {
     fileInput.addEventListener(
       "change",
       () => {
-        selectFile(
-          fileInput.files?.[0]
-        );
+        selectFile(fileInput.files?.[0]);
       }
     );
   }
@@ -263,18 +246,14 @@
       "dragover",
       (event) => {
         event.preventDefault();
-        uploadZone.classList.add(
-          "dragging"
-        );
+        uploadZone.classList.add("dragging");
       }
     );
 
     uploadZone.addEventListener(
       "dragleave",
       () => {
-        uploadZone.classList.remove(
-          "dragging"
-        );
+        uploadZone.classList.remove("dragging");
       }
     );
 
@@ -283,13 +262,10 @@
       (event) => {
         event.preventDefault();
 
-        uploadZone.classList.remove(
-          "dragging"
-        );
+        uploadZone.classList.remove("dragging");
 
         selectFile(
-          event.dataTransfer
-            ?.files?.[0]
+          event.dataTransfer?.files?.[0]
         );
       }
     );
@@ -300,14 +276,9 @@
       "input",
       () => {
         currentResumeText =
-          cleanText(
-            resumeText.value
-          );
+          cleanText(resumeText.value);
 
-        if (
-          currentResumeText &&
-          selectedFile
-        ) {
+        if (currentResumeText && selectedFile) {
           selectedFile = null;
           currentFileName = "";
 
@@ -315,8 +286,7 @@
             fileInput.value = "";
           }
 
-          const fileName =
-            $("#fileName");
+          const fileName = $("#fileName");
 
           if (fileName) {
             fileName.innerHTML =
@@ -353,8 +323,7 @@
     let response;
 
     if (file) {
-      const formData =
-        new FormData();
+      const formData = new FormData();
 
       formData.append(
         "file",
@@ -362,57 +331,37 @@
         file.name
       );
 
-      response =
-        await fetch(
-          API_URL,
-          {
-            method: "POST",
-            body: formData,
-            headers: {
-              Accept:
-                "application/json",
-            },
-          }
-        );
+      response = await fetch(API_URL, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
     } else {
-      response =
-        await fetch(
-          API_URL,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Accept:
-                "application/json",
-            },
-            body: JSON.stringify({
-              text,
-              fileName:
-                currentFileName ||
-                "Pasted Resume",
-            }),
-          }
-        );
+      response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          text,
+          fileName:
+            currentFileName || "Pasted Resume",
+        }),
+      });
     }
 
     const contentType =
-      response.headers.get(
-        "content-type"
-      ) || "";
+      response.headers.get("content-type") || "";
 
     let data = null;
 
-    if (
-      contentType.includes(
-        "application/json"
-      )
-    ) {
-      data =
-        await response.json();
+    if (contentType.includes("application/json")) {
+      data = await response.json();
     } else {
-      const raw =
-        await response.text();
+      const raw = await response.text();
 
       throw new Error(
         raw
@@ -439,23 +388,15 @@
   }
 
   function normalizeScore(value) {
-    const number =
-      Number(value);
+    const number = Number(value);
 
-    if (
-      !Number.isFinite(
-        number
-      )
-    ) {
+    if (!Number.isFinite(number)) {
       return 0;
     }
 
     return Math.max(
       0,
-      Math.min(
-        100,
-        Math.round(number)
-      )
+      Math.min(100, Math.round(number))
     );
   }
 
@@ -466,13 +407,8 @@
 
     return value
       .map((item) => {
-        if (
-          typeof item ===
-          "string"
-        ) {
-          return cleanText(
-            item
-          );
+        if (typeof item === "string") {
+          return cleanText(item);
         }
 
         return cleanText(
@@ -496,45 +432,27 @@
     return {
       ...data,
 
-      score:
-        normalizeScore(
-          data?.score
-        ),
+      score: normalizeScore(data?.score),
 
       fileName,
+      resumeFileName: fileName,
 
-      resumeFileName:
-        fileName,
+      strengths: normalizeList(data?.strengths),
 
-      strengths:
-        normalizeList(
-          data?.strengths
-        ),
+      weaknesses: normalizeList(data?.weaknesses),
 
-      weaknesses:
-        normalizeList(
-          data?.weaknesses
-        ),
+      missingSkills: normalizeList(
+        data?.missingSkills ||
+        data?.missing_skills
+      ),
 
-      missingSkills:
-        normalizeList(
-          data?.missingSkills ||
-          data?.missing_skills
-        ),
+      suggestions: normalizeList(data?.suggestions),
 
-      suggestions:
-        normalizeList(
-          data?.suggestions
-        ),
-
-      breakdown:
-        data?.breakdown || {},
+      breakdown: data?.breakdown || {},
     };
   }
 
-  function scoreDescription(
-    score
-  ) {
+  function scoreDescription(score) {
     if (score >= 90) {
       return "Excellent ATS readiness. Your resume is highly optimized for automated screening.";
     }
@@ -558,78 +476,55 @@
     return "Your resume needs significant improvements before it is ready for ATS screening.";
   }
 
-  function renderBreakdown(
-    breakdown
-  ) {
-    const container =
-      $("#breakdownGrid");
+  function renderBreakdown(breakdown) {
+    const container = $("#breakdownGrid");
 
     if (!container) return;
 
     const labels = {
-      formatting:
-        ["Formatting", 20],
-      keywords:
-        ["Keywords", 25],
-      experience:
-        ["Experience", 20],
-      projects:
-        ["Projects", 15],
-      education:
-        ["Education", 10],
-      professionalism:
-        ["Professionalism", 10],
+      formatting: ["Formatting", 20],
+      keywords: ["Keywords", 25],
+      experience: ["Experience", 20],
+      projects: ["Projects", 15],
+      education: ["Education", 10],
+      professionalism: ["Professionalism", 10],
     };
 
     container.innerHTML =
       Object.entries(labels)
-        .map(
-          ([key, [label, max]]) => {
-            const value =
-              Math.max(
-                0,
-                Math.min(
-                  max,
-                  Number(
-                    breakdown?.[key] ||
-                    0
-                  )
-                )
-              );
+        .map(([key, [label, max]]) => {
+          const value = Math.max(
+            0,
+            Math.min(
+              max,
+              Number(breakdown?.[key] || 0)
+            )
+          );
 
-            const percent =
-              (value / max) * 100;
+          const percent = (value / max) * 100;
 
-            return `
-              <div class="breakdown-item">
-                <div class="breakdown-top">
-                  <span>${escapeHtml(label)}</span>
-                  <strong>${value}/${max}</strong>
-                </div>
-                <div class="progress-track">
-                  <div class="progress-fill" style="width:${percent}%"></div>
-                </div>
+          return `
+            <div class="breakdown-item">
+              <div class="breakdown-top">
+                <span>${escapeHtml(label)}</span>
+                <strong>${value}/${max}</strong>
               </div>
-            `;
-          }
-        )
+              <div class="progress-track">
+                <div class="progress-fill" style="width:${percent}%"></div>
+              </div>
+            </div>
+          `;
+        })
         .join("");
   }
 
-  function renderList(
-    selector,
-    items,
-    emptyText
-  ) {
-    const container =
-      $(selector);
+  function renderList(selector, items, emptyText) {
+    const container = $(selector);
 
     if (!container) return;
 
     const safeItems =
-      Array.isArray(items)
-        ? items
-        : [];
+      Array.isArray(items) ? items : [];
 
     container.innerHTML =
       safeItems.length
@@ -642,11 +537,8 @@
         : `<li>${escapeHtml(emptyText)}</li>`;
   }
 
-  function renderChips(
-    items
-  ) {
-    const container =
-      $("#missingSkills");
+  function renderChips(items) {
+    const container = $("#missingSkills");
 
     if (!container) return;
 
@@ -665,51 +557,35 @@
         .join("");
   }
 
-  function renderAnalysis(
-    rawData
-  ) {
-    const data =
-      normalizeAnalysis(
-        rawData
-      );
+  function renderAnalysis(rawData) {
+    const data = normalizeAnalysis(rawData);
 
-    currentAnalysis =
-      data;
+    currentAnalysis = data;
 
-    const score =
-      data.score;
+    const score = data.score;
 
-    const scoreValue =
-      $("#scoreValue");
+    const scoreValue = $("#scoreValue");
 
     if (scoreValue) {
-      scoreValue.textContent =
-        `${score}%`;
+      scoreValue.textContent = `${score}%`;
     }
 
-    const scoreLabel =
-      $("#scoreLabel");
+    const scoreLabel = $("#scoreLabel");
 
     if (scoreLabel) {
       scoreLabel.textContent =
-        data.scoreLabel ||
-        "ATS Score";
+        data.scoreLabel || "ATS Score";
     }
 
     const scoreDescriptionEl =
       $("#scoreDescription");
 
-    if (
-      scoreDescriptionEl
-    ) {
+    if (scoreDescriptionEl) {
       scoreDescriptionEl.textContent =
-        scoreDescription(
-          score
-        );
+        scoreDescription(score);
     }
 
-    const scoreRing =
-      $("#scoreRing");
+    const scoreRing = $("#scoreRing");
 
     if (scoreRing) {
       scoreRing.style.setProperty(
@@ -718,9 +594,7 @@
       );
     }
 
-    renderBreakdown(
-      data.breakdown
-    );
+    renderBreakdown(data.breakdown);
 
     renderList(
       "#strengths",
@@ -734,9 +608,7 @@
       "Gemini did not return weaknesses."
     );
 
-    renderChips(
-      data.missingSkills
-    );
+    renderChips(data.missingSkills);
 
     renderList(
       "#suggestions",
@@ -745,9 +617,7 @@
     );
 
     if (resultSection) {
-      resultSection.classList.remove(
-        "hidden"
-      );
+      resultSection.classList.remove("hidden");
 
       resultSection.scrollIntoView({
         behavior: "smooth",
@@ -764,10 +634,7 @@
         event.stopPropagation();
 
         clearError();
-
-        setLoading(
-          true
-        );
+        setLoading(true);
 
         setLoadingStep(
           selectedFile
@@ -776,16 +643,13 @@
         );
 
         try {
-          const data =
-            await requestAnalysis();
+          const data = await requestAnalysis();
 
           setLoadingStep(
             "Building your ATS report..."
           );
 
-          renderAnalysis(
-            data
-          );
+          renderAnalysis(data);
         } catch (error) {
           console.error(
             "ResumCheck analysis error:",
@@ -797,41 +661,32 @@
             "Unable to analyze the resume."
           );
         } finally {
-          setLoading(
-            false
-          );
+          setLoading(false);
         }
       }
     );
   }
 
   /*
-   * Reset
+   * Reset analysis.
    */
-  const newAnalysis =
-    $("#newAnalysis");
+  const newAnalysis = $("#newAnalysis");
 
   if (newAnalysis) {
     newAnalysis.addEventListener(
       "click",
       () => {
-        currentAnalysis =
-          null;
+        currentAnalysis = null;
 
         clearSelectedFile();
-
         clearError();
 
         if (resultSection) {
-          resultSection.classList.add(
-            "hidden"
-          );
+          resultSection.classList.add("hidden");
         }
 
         document
-          .querySelector(
-            "#upload"
-          )
+          .querySelector("#upload")
           ?.scrollIntoView({
             behavior: "smooth",
             block: "start",
@@ -841,78 +696,127 @@
   }
 
   /*
-   * PDF report
+   * PDF report.
+   *
+   * Load jsPDF on demand if index.html did not load it
+   * or if the original CDN failed.
    */
-  const downloadReport =
-    $("#downloadReport");
+  let jsPDFLoadPromise = null;
+
+  function loadJsPDF() {
+    const existingJsPDF =
+      window.jspdf?.jsPDF ||
+      window.jsPDF;
+
+    if (existingJsPDF) {
+      return Promise.resolve(existingJsPDF);
+    }
+
+    if (jsPDFLoadPromise) {
+      return jsPDFLoadPromise;
+    }
+
+    const sources = [
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js",
+      "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js",
+    ];
+
+    jsPDFLoadPromise = (async () => {
+      for (const src of sources) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+
+            script.src = src;
+            script.async = true;
+
+            script.onload = resolve;
+
+            script.onerror = () => {
+              script.remove();
+
+              reject(
+                new Error(
+                  `Could not load PDF library from ${src}`
+                )
+              );
+            };
+
+            document.head.appendChild(script);
+          });
+
+          const loadedJsPDF =
+            window.jspdf?.jsPDF ||
+            window.jsPDF;
+
+          if (loadedJsPDF) {
+            return loadedJsPDF;
+          }
+        } catch (error) {
+          console.warn(
+            "ResumCheck: jsPDF source failed:",
+            src,
+            error
+          );
+        }
+      }
+
+      throw new Error(
+        "The PDF report library could not be loaded. Check your internet connection or add jsPDF to index.html."
+      );
+    })();
+
+    return jsPDFLoadPromise;
+  }
+
+  const downloadReport = $("#downloadReport");
 
   if (downloadReport) {
     downloadReport.addEventListener(
       "click",
       async () => {
         if (!currentAnalysis) {
-          showError(
-            "Analyze a resume first."
-          );
-          return;
-        }
-
-        const jsPDF =
-          window.jspdf?.jsPDF;
-
-        if (!jsPDF) {
-          showError(
-            "PDF report library is not loaded. Please refresh the page and try again."
-          );
+          showError("Analyze a resume first.");
           return;
         }
 
         try {
-          downloadReport.disabled =
-            true;
+          downloadReport.disabled = true;
+          clearError();
 
-          const doc =
-            new jsPDF({
-              unit: "pt",
-              format: "a4",
-            });
+          // Ensure jsPDF is available before creating the report.
+          const jsPDF = await loadJsPDF();
+
+          const doc = new jsPDF({
+            unit: "pt",
+            format: "a4",
+          });
 
           const margin = 40;
           let y = 48;
 
-          const addText =
-            (text, size = 10) => {
-              doc.setFontSize(
-                size
-              );
+          const addText = (text, size = 10) => {
+            doc.setFontSize(size);
 
-              const lines =
-                doc.splitTextToSize(
-                  String(text || ""),
-                  515
-                );
+            const lines = doc.splitTextToSize(
+              String(text || ""),
+              515
+            );
 
-              if (
-                y +
-                  lines.length *
-                    (size + 4) >
-                800
-              ) {
-                doc.addPage();
-                y = 48;
-              }
+            if (
+              y + lines.length * (size + 4) >
+              800
+            ) {
+              doc.addPage();
+              y = 48;
+            }
 
-              doc.text(
-                lines,
-                margin,
-                y
-              );
+            doc.text(lines, margin, y);
 
-              y +=
-                lines.length *
-                  (size + 4) +
-                8;
-            };
+            y +=
+              lines.length * (size + 4) +
+              8;
+          };
 
           addText(
             "ResumCheck — ATS Resume Report",
@@ -934,25 +838,16 @@
             14
           );
 
-          addText(
-            "Score Breakdown",
-            13
-          );
+          addText("Score Breakdown", 13);
 
-          for (
-            const [
-              key,
-              label,
-              max,
-            ] of [
-              ["formatting", "Formatting", 20],
-              ["keywords", "Keywords", 25],
-              ["experience", "Experience", 20],
-              ["projects", "Projects", 15],
-              ["education", "Education", 10],
-              ["professionalism", "Professionalism", 10],
-            ]
-          ) {
+          for (const [key, label, max] of [
+            ["formatting", "Formatting", 20],
+            ["keywords", "Keywords", 25],
+            ["experience", "Experience", 20],
+            ["projects", "Projects", 15],
+            ["education", "Education", 10],
+            ["professionalism", "Professionalism", 10],
+          ]) {
             addText(
               `${label}: ${currentAnalysis.breakdown?.[key] || 0}/${max}`,
               10
@@ -978,31 +873,22 @@
             ],
           ];
 
-          for (
-            const [title, items] of sections
-          ) {
-            addText(
-              title,
-              13
-            );
+          for (const [title, items] of sections) {
+            addText(title, 13);
 
             (
               items.length
                 ? items
                 : ["No AI items returned."]
-            ).forEach(
-              (item, index) => {
-                addText(
-                  `${index + 1}. ${item}`,
-                  10
-                );
-              }
-            );
+            ).forEach((item, index) => {
+              addText(
+                `${index + 1}. ${item}`,
+                10
+              );
+            });
           }
 
-          doc.save(
-            "ResumCheck-ATS-Report.pdf"
-          );
+          doc.save("ResumCheck-ATS-Report.pdf");
         } catch (error) {
           console.error(
             "PDF report error:",
@@ -1010,21 +896,20 @@
           );
 
           showError(
+            error?.message ||
             "Could not generate the PDF report."
           );
         } finally {
-          downloadReport.disabled =
-            false;
+          downloadReport.disabled = false;
         }
       }
     );
   }
 
   /*
-   * Contact form
+   * Contact form.
    */
-  const contactForm =
-    $("#contactForm");
+  const contactForm = $("#contactForm");
 
   if (contactForm) {
     contactForm.addEventListener(
@@ -1032,32 +917,23 @@
       (event) => {
         event.preventDefault();
 
-        const status =
-          $("#contactStatus");
+        const status = $("#contactStatus");
 
-        const name =
-          cleanText(
-            $("#contactName")
-              ?.value
-          );
+        const name = cleanText(
+          $("#contactName")?.value
+        );
 
-        const email =
-          cleanText(
-            $("#contactEmail")
-              ?.value
-          );
+        const email = cleanText(
+          $("#contactEmail")?.value
+        );
 
-        const subject =
-          cleanText(
-            $("#contactSubject")
-              ?.value
-          );
+        const subject = cleanText(
+          $("#contactSubject")?.value
+        );
 
-        const message =
-          cleanText(
-            $("#contactMessage")
-              ?.value
-          );
+        const message = cleanText(
+          $("#contactMessage")?.value
+        );
 
         if (
           !name ||
@@ -1069,6 +945,7 @@
             status.textContent =
               "Please complete all fields.";
           }
+
           return;
         }
 
@@ -1086,62 +963,115 @@
     "ResumCheck frontend initialized."
   );
 
-  // Mobile navigation: keep this in script.js so the menu works even if the
-  // inline handler in index.html is removed or the markup is updated later.
+  /*
+   * Mobile navigation.
+   */
   function setMobileMenuOpen(open) {
     const button = document.getElementById("menuBtn");
     const menu = document.getElementById("mobileNav");
+
     if (!button || !menu) return;
 
     menu.classList.toggle("open", Boolean(open));
-    button.setAttribute("aria-expanded", String(Boolean(open)));
+
+    button.setAttribute(
+      "aria-expanded",
+      String(Boolean(open))
+    );
+
     button.setAttribute(
       "aria-label",
-      open ? "Close navigation menu" : "Open navigation menu"
+      open
+        ? "Close navigation menu"
+        : "Open navigation menu"
     );
+
     const icon = button.querySelector("i");
+
     if (icon) {
-      icon.className = open ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+      icon.className = open
+        ? "fa-solid fa-xmark"
+        : "fa-solid fa-bars";
     }
   }
 
-  // Expose a global function for the existing onclick="toggleMobileMenu(event)".
   window.toggleMobileMenu = function (event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
+
     const menu = document.getElementById("mobileNav");
+
     if (!menu) return;
-    setMobileMenuOpen(!menu.classList.contains("open"));
+
+    setMobileMenuOpen(
+      !menu.classList.contains("open")
+    );
   };
 
   function initializeMobileMenu() {
     const button = document.getElementById("menuBtn");
     const menu = document.getElementById("mobileNav");
-    if (!button || !menu || button.dataset.menuInitialized === "true") return;
+
+    if (
+      !button ||
+      !menu ||
+      button.dataset.menuInitialized === "true"
+    ) {
+      return;
+    }
+
     button.dataset.menuInitialized = "true";
 
-    // Bind one click handler from script.js (remove inline handler to avoid double toggles).
+    // Prevent inline and JavaScript handlers from both toggling the menu.
     button.removeAttribute("onclick");
-    button.addEventListener("click", window.toggleMobileMenu);
+
+    button.addEventListener(
+      "click",
+      window.toggleMobileMenu
+    );
+
     menu.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => setMobileMenuOpen(false));
+      link.addEventListener(
+        "click",
+        () => setMobileMenuOpen(false)
+      );
     });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setMobileMenuOpen(false);
-    });
-    document.addEventListener("click", (event) => {
-      if (!menu.classList.contains("open")) return;
-      if (menu.contains(event.target) || button.contains(event.target)) return;
-      setMobileMenuOpen(false);
-    });
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Escape") {
+          setMobileMenuOpen(false);
+        }
+      }
+    );
+
+    document.addEventListener(
+      "click",
+      (event) => {
+        if (!menu.classList.contains("open")) return;
+
+        if (
+          menu.contains(event.target) ||
+          button.contains(event.target)
+        ) {
+          return;
+        }
+
+        setMobileMenuOpen(false);
+      }
+    );
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeMobileMenu, { once: true });
+    document.addEventListener(
+      "DOMContentLoaded",
+      initializeMobileMenu,
+      { once: true }
+    );
   } else {
     initializeMobileMenu();
   }
-
 })();
