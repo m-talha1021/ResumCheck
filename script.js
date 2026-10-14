@@ -1044,7 +1044,7 @@
         doc.setFontSize(12);
         setColor([130, 231, 221]);
 
-        doc.text("RESUMCHECK", margin, 43);
+        doc.text("ResumCheck", margin, 43);
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(25);
@@ -1083,11 +1083,7 @@
         doc.setFontSize(9);
         setColor([205, 219, 236]);
 
-        doc.text(
-          "Candidate: " + candidate,
-          margin,
-          157
-        );
+       
 
         y = 205;
 
@@ -1111,7 +1107,7 @@
         setColor(muted);
 
         doc.text(
-          "YOUR ATS READINESS SCORE",
+          "YOUR ATS SCORE",
           margin + 19,
           y + 25
         );
