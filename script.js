@@ -1071,7 +1071,7 @@
         );
 
         const displayFileName = doc.splitTextToSize(
-          "Resume: " + fileName,
+          "File: " + fileName,
           contentWidth - 10
         );
 
