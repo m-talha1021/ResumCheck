@@ -1043,7 +1043,7 @@
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
         setColor([130, 231, 221]);
-
+        doc.addImage(logoBase64, "favicon.png", margin, 25, 45, 45);
         doc.text("ResumCheck", margin, 43);
 
         doc.setFont("helvetica", "bold");
