@@ -1371,7 +1371,16 @@
           );
         }
 
-        doc.save("ResumCheck-ATS-Report.pdf");
+       
+        const originalName = fileName || "Resume";
+        const safeName = originalName
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+        .trim();
+
+         doc.save(`ResumCheck-Report-${safeName}.pdf`);
+
+
 
       } catch (error) {
         console.error("PDF report error:", error);
