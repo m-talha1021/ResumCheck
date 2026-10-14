@@ -1034,21 +1034,21 @@
          * PAGE 1: REPORT HEADER
          */
 
-        fillColor(navy);
+        fillColor([102, 105, 110]);
         doc.rect(0, 0, pageWidth, 175, "F");
 
         fillColor(teal);
         doc.rect(0, 175, pageWidth, 5, "F");
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        setColor([130, 231, 221]);
-        doc.addImage("favicon.png", margin, 25, 45, 45);
-        doc.text("ResumCheck", margin, 43);
+        doc.setFontSize(20);
+        setColor(white);
+        doc.addImage("favicon.png", margin, 25, 40, 40);
+        doc.text("ResumCheck", margin-left, 52);
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(25);
-        setColor(white);
+        setColor([33, 115, 222]);
 
         doc.text(
           "Resume ATS Report",
