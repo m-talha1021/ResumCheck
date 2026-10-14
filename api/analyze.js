@@ -2139,8 +2139,7 @@ async function handler(
 
       // Report metadata for the frontend.
       reportMeta: {
-        resumeFileName: fileName || "Pasted Resume",
-        candidateName: analysis.candidateName || "Candidate",
+        resumeFileName: fileName || "Pasted Resume"
       },
 
       /*
