@@ -1040,15 +1040,19 @@
         fillColor(teal);
         doc.rect(0, 175, pageWidth, 5, "F");
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(20);
-        setColor(white);
-        doc.addImage("logo.png", margin, 25, 40, 40);
-        doc.text("ResumCheck", margin, 52);
+      
+/* Logo and website name — fixed alignment */
+        doc.addImage("logo.png", margin, 30, 32, 32);
+
+         doc.setFont("helvetica", "bold");
+         doc.setFontSize(22);
+         doc.setTextColor(255, 255, 255);
+         doc.text("ResumCheck", margin + 40, 52);
+
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(25);
-        setColor([33, 115, 222]);
+        setColor([15, 103, 245]);
 
         doc.text(
           "Resume ATS Report",
