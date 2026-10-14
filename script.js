@@ -1042,7 +1042,7 @@
 
       
 /* Logo and website name — fixed alignment */
-        doc.addImage("logo.png", margin, 30, 32, 32);
+        doc.addImage("logo.png", margin, 29, 34, 34);
 
          doc.setFont("helvetica", "bold");
          doc.setFontSize(22);
@@ -1052,7 +1052,7 @@
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(25);
-        setColor([15, 103, 245]);
+        setColor([61, 188, 252]);
 
         doc.text(
           "Resume ATS Report",
