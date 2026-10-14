@@ -1044,7 +1044,7 @@
         doc.setFontSize(20);
         setColor(white);
         doc.addImage("logo.png", margin, 25, 40, 40);
-        doc.text("ResumCheck", margin-left, 52);
+        doc.text("ResumCheck", padding-left, 40, margin, 52);
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(25);
