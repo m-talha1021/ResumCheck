@@ -2433,12 +2433,15 @@ small,
 .hero h1 span,
 .eyebrow,
 .section-head>span,
-.desktop-nav a:hover,
-.mobile-nav a:hover,
 .footer-grid a:hover,
 .about-features i,
 .contact-info>div>i {
   color: #1e40af;
+}
+
+.desktop-nav a:hover
+{
+  color: white;  
 }
 
 .brand i,
@@ -2946,7 +2949,6 @@ textarea::placeholder {
   .hero h1 span,
   .eyebrow,
   .section-head>span,
-  .desktop-nav a:hover,
   .footer-grid a:hover,
   .about-features i,
   .contact-info>div>i,
@@ -2954,6 +2956,11 @@ textarea::placeholder {
   .breakdown h3 i,
   .chip {
     color: #2585d8 !important;
+  }
+
+  .desktop-nav a:hover
+  {
+    color: white !important;
   }
 
   .eyebrow,
@@ -3079,9 +3086,8 @@ section:nth-of-type(even) {
 
 /* Dark blue navbar link hover */
 .brand:hover,
-.navbar a:not(.nav-cta):hover,
 .nav-links a:hover {
-  color: #1d4ed8 !important;
+  color: white !important;
   transition: color 0.2s ease;
 }
 
@@ -3093,7 +3099,7 @@ nav a:not(.brand):not(.nav-cta) {
 }
 
 nav a:not(.brand):not(.nav-cta):hover {
-  color: #1d4ed8 !important;
+  color: white !important;
   transform: scale(1.15) !important;
 }
 /* Center footer copyright text */
