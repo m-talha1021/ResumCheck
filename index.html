@@ -25,7 +25,7 @@
                     <li><a href="#home">Home</a></li>
                     <li><a href="#features">Features</a></li>
                     <li><a href="#about">About ATS</a></li>
-                    <li><a href="#upload">Upload Resume</a></li>
+                    <li><a href="#dropzone">Upload Resume</a></li>
                     <li><a href="#contact">Contact Us</a></li>
                 </ul>
                 <a href="#upload" class="nav-cta">Analyze Resume</a>
@@ -72,7 +72,7 @@
                         <div>
                             <strong>3.5x</strong><small>More Interview Calls</small>
                         </div>
-                        <h2>  > No login/signup required</h2>
+                        <h2> > No login/signup required</h2>
                     </div>
                 </div>
                 <div class="hero-preview floating">
@@ -109,62 +109,6 @@
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         Missing LinkedIn profile link in header section
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="features" class="section white">
-            <div class="container">
-                <div class="section-head">
-                    <span>Features</span>
-                    <h2>Everything You Need For An ATS-Friendly CV</h2>
-                    <p>
-                        Our comprehensive resume checking suite breaks down
-                        your CV into actionable insights, helping you beat
-                        automated screening software.
-                    </p>
-                </div>
-                <div class="feature-grid">
-                    <article class="feature">
-                        <div class="feature-icon blue">
-                            <i class="fa-solid fa-brain"></i>
-                        </div>
-                        <h3>AI Analysis</h3>
-                        <p>
-                            Intelligent resume review using Google's Gemini
-                            AI and smart parsing rules.
-                        </p>
-                    </article>
-                    <article class="feature">
-                        <div class="feature-icon green">
-                            <i class="fa-solid fa-chart-simple"></i>
-                        </div>
-                        <h3>ATS Score</h3>
-                        <p>
-                            Understand how ATS systems evaluate and grade
-                            your resume formatting and content.
-                        </p>
-                    </article>
-                    <article class="feature">
-                        <div class="feature-icon amber">
-                            <i class="fa-solid fa-lightbulb"></i>
-                        </div>
-                        <h3>Suggestions</h3>
-                        <p>
-                            Improve your resume with step-by-step actionable
-                            recommendations and rewrites.
-                        </p>
-                    </article>
-                    <article class="feature">
-                        <div class="feature-icon purple">
-                            <i class="fa-solid fa-list-check"></i>
-                        </div>
-                        <h3>Skills Detection</h3>
-                        <p>
-                            Discover missing technical and soft skills
-                            crucial for your target role.
-                        </p>
-                    </article>
                 </div>
             </div>
         </section>
@@ -241,13 +185,16 @@
                     <span>START YOUR ANALYSIS</span>
                     <h2>Check Your Resume ATS Score</h2>
                     <p>
-                        Drop your resume below and get a clear ATS score, keyword insights, and practical improvements in seconds.
+                        Drop your resume below and get a clear ATS score, keyword insights, and practical improvements
+                        in
+                        seconds.
                     </p>
                 </div>
                 <div class="upload-card">
                     <div class="upload-card-top">
                         <div>
-                            <span class="upload-kicker"><i class="fa-solid fa-shield-halved"></i> Private &amp; secure</span>
+                            <span class="upload-kicker"><i class="fa-solid fa-shield-halved"></i> Private &amp;
+                                secure</span>
                             <h3>Upload your resume</h3>
                             <p>PDF, DOCX, or TXT · Maximum 5 MB</p>
                         </div>
@@ -259,18 +206,23 @@
 
                     <form id="analyzeForm" novalidate>
                         <div class="legacy-mode-controls" aria-hidden="true">
-                            <button type="button" class="mode-btn active" id="fileModeBtn" tabindex="-1">Upload File</button>
+                            <button type="button" class="mode-btn active" id="fileModeBtn" tabindex="-1">Upload
+                                File</button>
                             <button type="button" class="mode-btn" id="textModeBtn" tabindex="-1">Paste Text</button>
                         </div>
-                   
+
                         <div id="fileMode">
-                            <label class="upload-box" id="dropzone" for="fileInput" role="button" tabindex="0" aria-label="Upload resume">
+                            <label class="upload-box" id="dropzone" for="fileInput" role="button" tabindex="0"
+                                aria-label="Upload resume">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <h3 id="fileHeading">Drop your resume here</h3>
                                 <p id="fileSub">
-                                    Drag &amp; drop your file here, or <strong>browse from your device</strong><br><small>PDF · DOCX · TXT</small>
+                                    Drag &amp; drop your file here, or <strong>browse from your
+                                        device</strong><br><small>PDF ·
+                                        DOCX · TXT</small>
                                 </p>
-                                <div class="file-name" id="fileName"><i class="fa-regular fa-file"></i> No file selected</div>
+                                <div class="file-name" id="fileName"><i class="fa-regular fa-file"></i> No file selected
+                                </div>
                                 <input id="fileInput" type="file"
                                     accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                                     hidden />
@@ -288,7 +240,7 @@
                             <span>Analyze My Resume</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
-                     
+
                         <div class="upload-trust">
                             <span><i class="fa-solid fa-lock"></i> Your resume stays private</span>
                             <span><i class="fa-solid fa-clock"></i> Results in seconds</span>
@@ -309,7 +261,7 @@
                         standards and resume quality metrics.
                     </p>
                 </div>
-                  <div class="score-card">
+                <div class="score-card">
                     <div class="score-ring" id="scoreRing">
                         <div>
                             <strong id="scoreValue">0%</strong><small>ATS Score</small>
@@ -317,7 +269,7 @@
                     </div>
                     <h3 id="scoreLabel">Good</h3>
                     <p id="scoreDescription"></p>
-                    
+
                 </div>
                 <div class="breakdown">
                     <h3>
@@ -395,6 +347,63 @@
                 </div>
             </div>
         </section>
+
+        <section id="features" class="section white">
+            <div class="container">
+                <div class="section-head">
+                    <span>Features</span>
+                    <h2>Everything You Need For An ATS-Friendly CV</h2>
+                    <p>
+                        Our comprehensive resume checking suite breaks down
+                        your CV into actionable insights, helping you beat
+                        automated screening software.
+                    </p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature">
+                        <div class="feature-icon blue">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3>AI Analysis</h3>
+                        <p>
+                            Intelligent resume review using Google's Gemini
+                            AI and smart parsing rules.
+                        </p>
+                    </article>
+                    <article class="feature">
+                        <div class="feature-icon green">
+                            <i class="fa-solid fa-chart-simple"></i>
+                        </div>
+                        <h3>ATS Score</h3>
+                        <p>
+                            Understand how ATS systems evaluate and grade
+                            your resume formatting and content.
+                        </p>
+                    </article>
+                    <article class="feature">
+                        <div class="feature-icon amber">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <h3>Suggestions</h3>
+                        <p>
+                            Improve your resume with step-by-step actionable
+                            recommendations and rewrites.
+                        </p>
+                    </article>
+                    <article class="feature">
+                        <div class="feature-icon purple">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <h3>Skills Detection</h3>
+                        <p>
+                            Discover missing technical and soft skills
+                            crucial for your target role.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
 
         <section id="contact" class="section white">
             <div class="container">
@@ -475,4 +484,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
