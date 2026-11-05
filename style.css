@@ -3841,6 +3841,14 @@ header a {
     color: #ffffff !important;
 }
 
+.navbar a:hover {
+  color: white !important;
+}
+
+.nav a:hover {
+  color: white !important;
+}
+
 /* Navbar Brand / Logo */
 .navbar .logo,
 .navbar .brand {
@@ -3856,11 +3864,16 @@ header a {
     }
 
     .navbar .logo,
-    .navbar .brand,
+    .navbar .brand {
+      color: white;
+    }
     .navbar a,
     nav a {
         color: black !important;
     }
+   .navbar a {
+     font-weight: bold !important;
+   }
 
     /* Mobile menu / close button */
     .menu-toggle,
@@ -3889,8 +3902,4 @@ header a {
         background: #f5f3ff !important;
     }
 
-    .mobile-menu a,
-    .navbar-menu a {
-        color: black !important;
-    }
 }
