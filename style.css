@@ -3887,7 +3887,10 @@ header a {
    .navbar a {
      font-weight: bold !important;
    }
-
+   .mobile-nav a:hover
+  {
+    color: black !important;
+  }
     /* Mobile menu / close button */
     .menu-toggle,
     .navbar-toggler,
@@ -3915,4 +3918,7 @@ header a {
         background: #f5f3ff !important;
     }
 
+}
+.upload {
+  background-color: #8e78e3 !important;
 }
