@@ -3924,6 +3924,10 @@ header a {
   .nav-inner a:hover{
     color: white !important;
   }
+
+  .fa-solid fa-file-waveform > span:hover{
+    color: white !important;
+  }
     /* Mobile dropdown */
     .mobile-menu,
     .navbar-menu {
@@ -3938,3 +3942,6 @@ header a {
  .brand > span:hover{
   color: white !important;
 }
+.fa-solid fa-file-waveform > span:hover{
+    color: white !important;
+  }
