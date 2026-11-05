@@ -3917,6 +3917,9 @@ header a {
         color: #ffffff !important;
         stroke: #ffffff !important;
     }
+   .brand > span:hover{
+  color: white !important;
+}
 
   .nav-inner a:hover{
     color: white !important;
@@ -3930,5 +3933,8 @@ header a {
 }
 
 .nav-inner a:hover{
+  color: white !important;
+}
+ .brand > span:hover{
   color: white !important;
 }
