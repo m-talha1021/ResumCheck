@@ -1,3 +1,4 @@
+
 "use strict";
 
 const fs = require("fs/promises");
@@ -22,9 +23,6 @@ PDF-PARSE COMPATIBILITY
 Supports both major pdf-parse APIs:
 - pdf-parse v1: pdfParse(buffer)
 - pdf-parse v2: new PDFParse({ data: buffer }).getText()
-
-This is important because pdf-parse v2 no longer exposes
-the old function API in the same way.
 =========================================================
 */
 const pdfParse =
@@ -43,7 +41,6 @@ const { GoogleGenAI } = require("@google/genai");
 =========================================================
 RESUMCHECK - ANALYZE API
 =========================================================
-
 Supports:
 - PDF
 - DOCX
@@ -55,12 +52,12 @@ Supports:
 - DOCX text extraction
 - Deterministic ATS score
 - Gemini qualitative analysis
-- Multiple Gemini model fallback
+- Gemini model fallback
+- OpenRouter free-model fallback
 - Candidate-name extraction
 - Vercel Serverless Functions
 =========================================================
 */
-
 
 /*
 =========================================================
@@ -73,7 +70,6 @@ module.exports.config = {
     bodyParser: false,
   },
 };
-
 
 /*
 =========================================================
@@ -96,7 +92,6 @@ const DEFAULT_GEMINI_MODELS = [
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
 ];
-
 
 /*
 =========================================================
@@ -127,7 +122,6 @@ function getGeminiModels() {
   );
 }
 
-
 /*
 =========================================================
 TEXT NORMALIZATION
@@ -145,7 +139,6 @@ function normalizeResumeText(text) {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
-
 
 /*
 =========================================================
@@ -168,7 +161,6 @@ function getFieldValue(value) {
 
   return String(value || "");
 }
-
 
 /*
 =========================================================
@@ -215,7 +207,6 @@ function getUploadedFile(files) {
   return null;
 }
 
-
 /*
 =========================================================
 FORMIDABLE MULTIPART PARSER
@@ -225,19 +216,12 @@ FORMIDABLE MULTIPART PARSER
 async function parseMultipartForm(req) {
   const form = formidable({
     multiples: false,
-
     maxFileSize: MAX_FILE_BYTES,
-
     maxTotalFileSize: MAX_FILE_BYTES,
-
     maxFieldsSize: 2 * 1024 * 1024,
-
     keepExtensions: true,
-
     allowEmptyFiles: false,
-
     minFileSize: 1,
-
     uploadDir: "/tmp",
   });
 
@@ -258,7 +242,6 @@ async function parseMultipartForm(req) {
     );
   });
 }
-
 
 /*
 =========================================================
@@ -301,10 +284,6 @@ async function extractPdfText(filePath) {
 
         result = await parser.getText();
       } finally {
-        /*
-        pdf-parse v2 keeps resources around until destroy()
-        is called. Always release them on serverless functions.
-        */
         try {
           await parser?.destroy?.();
         } catch (cleanupError) {
@@ -360,7 +339,6 @@ async function extractPdfText(filePath) {
   }
 }
 
-
 /*
 =========================================================
 DOCX EXTRACTION
@@ -399,7 +377,6 @@ async function extractDocxText(filePath) {
   }
 }
 
-
 /*
 =========================================================
 TXT EXTRACTION
@@ -432,7 +409,6 @@ async function extractTxtText(filePath) {
     );
   }
 }
-
 
 /*
 =========================================================
@@ -521,7 +497,6 @@ async function extractResumeFromFile(file) {
   };
 }
 
-
 /*
 =========================================================
 CANDIDATE NAME EXTRACTION
@@ -574,23 +549,9 @@ function extractCandidateName(
       continue;
     }
 
-    /*
-    Example:
-
-    Muhammad Talha | Software Engineer
-
-    becomes:
-
-    Muhammad Talha
-    */
-
     candidate = candidate
       .split(/\s+[|•–—:]\s+/)[0]
       .trim();
-
-    /*
-    Reject contact information.
-    */
 
     if (
       /@/.test(candidate) ||
@@ -602,15 +563,6 @@ function extractCandidateName(
       continue;
     }
 
-    /*
-    IMPORTANT:
-    JavaScript does NOT support the
-    /ix regex flag.
-
-    This is intentionally written
-    using only the valid /i flag.
-    */
-
     if (
       /\b(phone|mobile|email|address|linkedin|github|portfolio)\b/i.test(
         candidate
@@ -618,10 +570,6 @@ function extractCandidateName(
     ) {
       continue;
     }
-
-    /*
-    Reject lines containing numbers.
-    */
 
     if (/\d/.test(candidate)) {
       continue;
@@ -644,11 +592,6 @@ function extractCandidateName(
       continue;
     }
 
-    /*
-    Allow normal international
-    alphabetic names.
-    */
-
     const namePattern =
       /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'’\-]*(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ.'’\-]*){1,5}$/;
 
@@ -661,7 +604,6 @@ function extractCandidateName(
 
   return "Candidate";
 }
-
 
 /*
 =========================================================
@@ -695,7 +637,6 @@ function countHits(
   return total;
 }
 
-
 /*
 =========================================================
 CLAMP
@@ -712,7 +653,6 @@ function clamp(
     Math.min(max, value)
   );
 }
-
 
 /*
 =========================================================
@@ -736,24 +676,14 @@ function getScoreLabel(score) {
   return "Needs Improvement";
 }
 
-
 /*
 =========================================================
 DETERMINISTIC ATS SCORE
 =========================================================
 
-IMPORTANT:
-
 Gemini NEVER calculates the ATS score.
-
 The same extracted resume text always
 produces the same score.
-
-There is:
-- no random number
-- no Date dependency
-- no Gemini score
-- no temperature dependency
 =========================================================
 */
 
@@ -1096,7 +1026,6 @@ function calculateDeterministicBreakdown(
   };
 }
 
-
 /*
 =========================================================
 TOTAL SCORE
@@ -1115,7 +1044,6 @@ function calculateScore(
     breakdown.professionalism
   );
 }
-
 
 /*
 =========================================================
@@ -1419,7 +1347,6 @@ function createLocalAnalysis(
   };
 }
 
-
 /*
 =========================================================
 GEMINI RESPONSE SCHEMA
@@ -1467,7 +1394,6 @@ const responseSchema = {
   ],
 };
 
-
 /*
 =========================================================
 GEMINI PROMPT
@@ -1514,132 +1440,272 @@ ${resumeText}
 `;
 }
 
-
 /*
 =========================================================
-RUN GEMINI WITH AUTOMATIC FALLBACK
+AI RESPONSE PARSING
 =========================================================
 */
 
-async function runGemini(
-  resumeText
-) {
-  const apiKey =
-    process.env.GEMINI_API_KEY;
+function parseAIResponse(rawText, provider, model) {
+  if (!rawText || typeof rawText !== "string") {
+    throw new Error(`${provider} returned an empty response.`);
+  }
 
-  /*
-  Gemini is optional.
-  The deterministic local analysis
-  still works without an API key.
-  */
+  const cleaned = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  let parsed;
+
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace <= firstBrace) {
+      throw new Error(`${provider} returned invalid JSON.`);
+    }
+
+    parsed = JSON.parse(
+      cleaned.slice(firstBrace, lastBrace + 1)
+    );
+  }
+
+  const requiredArrays = [
+    "strengths",
+    "weaknesses",
+    "missing_skills",
+    "suggestions",
+  ];
+
+  for (const field of requiredArrays) {
+    if (!Array.isArray(parsed?.[field])) {
+      throw new Error(
+        `${provider} response is missing a valid "${field}" array.`
+      );
+    }
+  }
+
+  console.log(`${provider} succeeded with model: ${model}`);
+  return parsed;
+}
+
+/*
+=========================================================
+OPENROUTER MODEL CONFIGURATION
+=========================================================
+*/
+
+const DEFAULT_OPENROUTER_MODELS = [
+  "openrouter/free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "dots-studio/dots-3-note-preview:free",
+  "liquid/lfm-2.5-2.6b:free",
+  "recursive/flint-v1.0:free",
+];
+
+function getOpenRouterModels() {
+  const configuredModels = String(
+    process.env.OPENROUTER_MODELS || ""
+  )
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+
+  const models = [
+    ...configuredModels,
+    ...DEFAULT_OPENROUTER_MODELS,
+  ].filter(
+    (model, index, array) =>
+      model && array.indexOf(model) === index
+  );
+
+  // Prevent accidental use of paid models.
+  return models.filter(
+    (model) =>
+      model === "openrouter/free" ||
+      model.endsWith(":free")
+  );
+}
+
+/*
+=========================================================
+RUN OPENROUTER FREE-MODEL FALLBACK
+=========================================================
+*/
+
+async function runOpenRouter(resumeText) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
     console.warn(
-      "GEMINI_API_KEY is not configured."
+      "OPENROUTER_API_KEY is not configured. Skipping OpenRouter."
     );
-
     return {};
   }
 
-  const ai =
-    new GoogleGenAI({
-      apiKey,
-    });
+  if (typeof fetch !== "function") {
+    console.warn(
+      "Global fetch is unavailable. OpenRouter fallback cannot run."
+    );
+    return {};
+  }
 
-  const models =
-    getGeminiModels();
+  const models = getOpenRouterModels();
+  const prompt = buildGeminiPrompt(resumeText);
 
-  for (
-    const model of models
-  ) {
+  for (const model of models) {
     try {
-      console.log(
-        `Trying Gemini model: ${model}`
-      );
+      console.log(`Trying OpenRouter free model: ${model}`);
 
-      const response =
-        await ai.models.generateContent({
-          model,
+      const headers = {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      };
 
-          contents: [
-            {
-              role: "user",
+      if (process.env.OPENROUTER_SITE_URL) {
+        headers["HTTP-Referer"] =
+          process.env.OPENROUTER_SITE_URL;
+      }
 
-              parts: [
-                {
-                  text:
-                    buildGeminiPrompt(
-                      resumeText
-                    ),
-                },
-              ],
-            },
-          ],
+      if (process.env.OPENROUTER_APP_NAME) {
+        headers["X-Title"] =
+          process.env.OPENROUTER_APP_NAME;
+      }
 
-          config: {
-            responseMimeType:
-              "application/json",
+      const response = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers,
+          signal: AbortSignal.timeout(45000),
+          body: JSON.stringify({
+            model,
 
-            responseSchema,
-
-            /*
-            Deterministic qualitative
-            Gemini generation.
-            */
+            messages: [
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
 
             temperature: 0,
+            max_tokens: 2048,
 
-            maxOutputTokens: 2048,
-          },
-        });
+            response_format: {
+              type: "json_object",
+            },
+          }),
+        }
+      );
+
+      const responseBody = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const apiMessage =
+          responseBody?.error?.message ||
+          responseBody?.message ||
+          `HTTP ${response.status}`;
+
+        console.warn(
+          `OpenRouter model failed: ${model} - ${apiMessage}`
+        );
+        continue;
+      }
 
       const rawText =
-        response?.text;
+        responseBody?.choices?.[0]?.message?.content;
 
-      if (!rawText) {
-        console.warn(
-          `Gemini returned an empty response: ${model}`
-        );
-
-        continue;
-      }
-
-      let parsed;
-
-      try {
-        parsed =
-          JSON.parse(
-            rawText
-          );
-      } catch (error) {
-        console.warn(
-          `Invalid Gemini JSON from ${model}:`,
-          error?.message || error
-        );
-
-        continue;
-      }
-
-      console.log(
-        `Gemini succeeded with model: ${model}`
+      const parsed = parseAIResponse(
+        rawText,
+        "OpenRouter",
+        model
       );
 
       return parsed;
     } catch (error) {
       console.warn(
-        `Gemini model failed: ${model}`,
+        `OpenRouter model failed: ${model}`,
         error?.message || error
       );
     }
   }
 
   console.warn(
-    "All Gemini models failed. Using local analysis."
+    "All OpenRouter free models failed. Using local analysis."
   );
 
   return {};
 }
 
+/*
+=========================================================
+RUN GEMINI, THEN OPENROUTER FREE-MODEL FALLBACK
+=========================================================
+*/
+
+async function runGemini(resumeText) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (apiKey) {
+    const ai = new GoogleGenAI({ apiKey });
+    const models = getGeminiModels();
+
+    for (const model of models) {
+      try {
+        console.log(`Trying Gemini model: ${model}`);
+
+        const response = await ai.models.generateContent({
+          model,
+
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: buildGeminiPrompt(resumeText),
+                },
+              ],
+            },
+          ],
+
+          config: {
+            responseMimeType: "application/json",
+            responseSchema,
+            temperature: 0,
+            maxOutputTokens: 2048,
+          },
+        });
+
+        const parsed = parseAIResponse(
+          response?.text,
+          "Gemini",
+          model
+        );
+
+        return parsed;
+      } catch (error) {
+        console.warn(
+          `Gemini model failed: ${model}`,
+          error?.message || error
+        );
+      }
+    }
+
+    console.warn(
+      "All Gemini models failed or are busy. Switching to OpenRouter free models."
+    );
+  } else {
+    console.warn(
+      "GEMINI_API_KEY is not configured. Trying OpenRouter free models."
+    );
+  }
+
+  return await runOpenRouter(resumeText);
+}
 
 /*
 =========================================================
@@ -1651,27 +1717,15 @@ function finalizeAnalysis(
   resumeText,
   geminiData
 ) {
-  /*
-  Local deterministic analysis.
-  */
-
   const local =
     createLocalAnalysis(
       resumeText
     );
 
-  /*
-  Candidate name.
-  */
-
   const candidateName =
     extractCandidateName(
       resumeText
     );
-
-  /*
-  Gemini qualitative information.
-  */
 
   const strengths =
     Array.isArray(
@@ -1706,10 +1760,8 @@ function finalizeAnalysis(
       : local.suggestions;
 
   /*
-  IMPORTANT:
   Numeric ATS score ALWAYS comes
   from local deterministic analysis.
-  Gemini cannot modify it.
   */
 
   return {
@@ -1746,7 +1798,6 @@ function finalizeAnalysis(
   };
 }
 
-
 /*
 =========================================================
 TEMP FILE CLEANUP
@@ -1773,12 +1824,9 @@ async function cleanupUploadedFile(
       filePath
     );
   } catch {
-    /*
-    Ignore cleanup errors.
-    */
+    // Ignore cleanup errors.
   }
 }
-
 
 /*
 =========================================================
@@ -1831,7 +1879,6 @@ async function readJsonBody(
     );
   }
 }
-
 
 /*
 =========================================================
@@ -1908,9 +1955,7 @@ async function handler(
       "Pasted Resume";
 
     /*
-    =====================================================
     JSON / PASTED TEXT
-    =====================================================
     */
 
     if (
@@ -1935,9 +1980,7 @@ async function handler(
     }
 
     /*
-    =====================================================
     MULTIPART / FILE UPLOAD
-    =====================================================
     */
 
     else if (
@@ -2011,9 +2054,7 @@ async function handler(
     }
 
     /*
-    =====================================================
     UNSUPPORTED CONTENT TYPE
-    =====================================================
     */
 
     else {
@@ -2024,20 +2065,13 @@ async function handler(
     }
 
     /*
-    =====================================================
     NORMALIZE
-    =====================================================
     */
 
     resumeText =
       normalizeResumeText(
         resumeText
       );
-
-    /*
-    Prevent excessively large
-    extracted text from reaching Gemini.
-    */
 
     if (
       resumeText.length >
@@ -2051,9 +2085,7 @@ async function handler(
     }
 
     /*
-    =====================================================
     EMPTY RESUME
-    =====================================================
     */
 
     if (!resumeText) {
@@ -2064,9 +2096,7 @@ async function handler(
     }
 
     /*
-    =====================================================
     VERY SHORT RESUME
-    =====================================================
     */
 
     if (
@@ -2088,9 +2118,7 @@ async function handler(
     );
 
     /*
-    =====================================================
-    GEMINI
-    =====================================================
+    GEMINI → OPENROUTER
     */
 
     let geminiData = {};
@@ -2102,7 +2130,7 @@ async function handler(
         );
     } catch (error) {
       console.warn(
-        "Gemini failed. Local fallback will be used:",
+        "AI providers failed. Local fallback will be used:",
         error?.message || error
       );
 
@@ -2110,9 +2138,7 @@ async function handler(
     }
 
     /*
-    =====================================================
     FINAL ANALYSIS
-    =====================================================
     */
 
     const analysis =
@@ -2122,30 +2148,19 @@ async function handler(
       );
 
     /*
-    =====================================================
     SUCCESS RESPONSE
-    =====================================================
     */
 
     return res.status(200).json({
       ...analysis,
 
-      // Original uploaded resume filename.
-      // This is metadata only and never affects the ATS score.
       fileName: fileName || "Pasted Resume",
 
-      // Explicit alias for frontend PDF/report generation.
       resumeFileName: fileName || "Pasted Resume",
 
-      // Report metadata for the frontend.
       reportMeta: {
         resumeFileName: fileName || "Pasted Resume"
       },
-
-      /*
-      This timestamp is informational only.
-      It NEVER participates in the ATS score.
-      */
 
       createdAt:
         new Date().toISOString(),
@@ -2173,10 +2188,6 @@ async function handler(
         error?.message || ""
       );
 
-    /*
-    5 MB error
-    */
-
     if (
       /max.*file.*size/i.test(
         message
@@ -2191,12 +2202,6 @@ async function handler(
       });
     }
 
-    /*
-    Always return JSON.
-    This prevents the frontend from
-    receiving an HTML Vercel error page.
-    */
-
     return res.status(500).json({
       error:
         message ||
@@ -2208,7 +2213,6 @@ async function handler(
     );
   }
 }
-
 
 /*
 =========================================================
