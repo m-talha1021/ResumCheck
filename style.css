@@ -168,9 +168,8 @@ img {
   transition: color .2s
 }
 
-.desktop-nav a:hover,
-.mobile-nav a:hover {
-  color: #0b3fce;
+.desktop-nav a:hover {
+  color: white;
 }
 
 .nav-cta {
