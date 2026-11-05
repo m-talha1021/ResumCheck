@@ -3831,7 +3831,7 @@ section {
 .navbar,
 nav,
 header {
-    background: linear-gradient(90deg, #3730a3, #4f46e5) !important;
+    background: #599ff0 !important;
 }
 
 /* Navbar Links */
