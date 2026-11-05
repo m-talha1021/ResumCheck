@@ -2593,7 +2593,6 @@ textarea::placeholder {
 
   body,
   .hero,
-  .section,
   .section.white,
   .section.gray,
   #resultSection,
@@ -2613,7 +2612,9 @@ textarea::placeholder {
     background-color: #ffffff !important;
     background-image: none !important;
   }
-
+.section {
+  background-color: #28344f !important;
+}
   h1,
   h2,
   h3,
