@@ -3845,7 +3845,7 @@ header a {
 .navbar a:hover,
 nav a:hover,
 header a:hover {
-    color: #a5f3fc !important;
+    color: white !important;
 }
 
 /* Navbar Brand / Logo */
