@@ -3854,6 +3854,9 @@ header a {
 .navbar .brand {
     color: #ffffff !important;
 }
+.navbar .brand:hover{
+  color: white;
+}
 /* Mobile Navbar Color Fix */
 @media (max-width: 768px) {
 
@@ -3867,6 +3870,10 @@ header a {
     .navbar .brand {
       color: white;
     }
+
+  .navbar .brand:hover {
+    color: white;
+  }
     .navbar a,
     nav a {
         color: black !important;
