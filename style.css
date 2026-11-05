@@ -3081,7 +3081,6 @@ section:nth-of-type(even) {
 .brand:hover,
 .navbar a:not(.nav-cta):hover,
 .nav-links a:hover {
-  color: #1d4ed8 !important;
   transition: color 0.2s ease;
 }
 
