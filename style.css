@@ -3863,6 +3863,11 @@ header a {
 .navbar .brand:hover{
   color: white;
 }
+.brand:hover{
+  color: white !important;
+}
+
+
 /* Mobile Navbar Color Fix */
 @media (max-width: 768px) {
 
@@ -3874,7 +3879,7 @@ header a {
 
     .navbar .logo,
     .navbar .brand {
-      color: white;
+      color: white !important;
     }
 
   .navbar .brand:hover {
@@ -3887,9 +3892,10 @@ header a {
    .navbar a {
      font-weight: bold !important;
    }
-   .mobile-nav a:hover
+   .navbar a:hover
   {
     color: black !important;
+    transform: none !important;
   }
     /* Mobile menu / close button */
     .menu-toggle,
