@@ -3831,7 +3831,7 @@ section {
 .navbar,
 nav,
 header {
-    background: #987ffa !important;
+    background: #472bba !important;
 }
 
 /* Navbar Links */
@@ -3852,4 +3852,52 @@ header a:hover {
 .navbar .logo,
 .navbar .brand {
     color: #ffffff !important;
+}
+/* Mobile Navbar Color Fix */
+@media (max-width: 768px) {
+
+    .navbar,
+    nav,
+    header {
+        background: linear-gradient(90deg, #5145d9, #8b5cf6) !important;
+    }
+
+    .navbar .logo,
+    .navbar .brand,
+    .navbar a,
+    nav a {
+        color: #ffffff !important;
+    }
+
+    /* Mobile menu / close button */
+    .menu-toggle,
+    .navbar-toggler,
+    .nav-toggle,
+    .hamburger,
+    .mobile-menu-btn {
+        background: #5145d9 !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255,255,255,0.35) !important;
+        border-radius: 14px;
+    }
+
+    /* Button icon */
+    .menu-toggle svg,
+    .navbar-toggler svg,
+    .nav-toggle svg,
+    .hamburger svg {
+        color: #ffffff !important;
+        stroke: #ffffff !important;
+    }
+
+    /* Mobile dropdown */
+    .mobile-menu,
+    .navbar-menu {
+        background: #f5f3ff !important;
+    }
+
+    .mobile-menu a,
+    .navbar-menu a {
+        color: #3730a3 !important;
+    }
 }
