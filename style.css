@@ -3771,3 +3771,16 @@ footer .footer-brand i {
     padding-inline: 0.06em;
   }
 }
+
+
+/* Remove unwanted gaps and divider lines between page sections */
+section {
+  margin-bottom: 0 !important;
+  border-bottom: 0 !important;
+}
+
+@media (max-width: 768px) {
+  section {
+    margin-bottom: 0 !important;
+  }
+}
