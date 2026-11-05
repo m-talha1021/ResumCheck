@@ -3918,6 +3918,9 @@ header a {
         stroke: #ffffff !important;
     }
 
+   .brand > span:hover{
+  color: white !important;
+}
     /* Mobile dropdown */
     .mobile-menu,
     .navbar-menu {
@@ -3925,6 +3928,6 @@ header a {
     }
 
 }
-#upload {
-  background-color: #8e78e3 !important;
+.brand > span:hover{
+  color: white !important;
 }
