@@ -111,15 +111,18 @@ function getGeminiModels() {
     process.env.GEMINI_MODEL || ""
   ).trim();
 
+  // Limit Gemini attempts to two to avoid long sequential retries.
   return [
     ...configuredModels,
     ...(legacyModel ? [legacyModel] : []),
     ...DEFAULT_GEMINI_MODELS,
-  ].filter(
-    (model, index, array) =>
-      model &&
-      array.indexOf(model) === index
-  );
+  ]
+    .filter(
+      (model, index, array) =>
+        model &&
+        array.indexOf(model) === index
+    )
+    .slice(0, 2);
 }
 
 /*
@@ -1501,10 +1504,6 @@ OPENROUTER MODEL CONFIGURATION
 
 const DEFAULT_OPENROUTER_MODELS = [
   "openrouter/free",
-  "nvidia/nemotron-3.5-super-vl:free",
-  "dots-studio/dots-3-note-preview:free",
-  "liquid/lfm-2.5-2.6b:free",
-  "recursive/flint-v1.0:free",
 ];
 
 function getOpenRouterModels() {
@@ -1515,20 +1514,19 @@ function getOpenRouterModels() {
     .map((model) => model.trim())
     .filter(Boolean);
 
-  const models = [
-    ...configuredModels,
-    ...DEFAULT_OPENROUTER_MODELS,
-  ].filter(
-    (model, index, array) =>
-      model && array.indexOf(model) === index
-  );
+  const models = configuredModels.length
+    ? configuredModels
+    : DEFAULT_OPENROUTER_MODELS;
 
-  // Prevent accidental use of paid models.
-  return models.filter(
-    (model) =>
-      model === "openrouter/free" ||
-      model.endsWith(":free")
-  );
+  // Use only explicitly free models; do not append extra fallback models.
+  return models
+    .filter(
+      (model, index, array) =>
+        model &&
+        array.indexOf(model) === index &&
+        (model === "openrouter/free" || model.endsWith(":free"))
+    )
+    .slice(0, 2);
 }
 
 /*
@@ -1581,7 +1579,7 @@ async function runOpenRouter(resumeText) {
         {
           method: "POST",
           headers,
-          signal: AbortSignal.timeout(45000),
+          signal: AbortSignal.timeout(20000),
           body: JSON.stringify({
             model,
 
