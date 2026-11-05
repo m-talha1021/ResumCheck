@@ -3842,11 +3842,11 @@ header a {
 }
 
 .navbar a:hover {
-  color: white !important;
+  color: white;
 }
 
 .nav a:hover {
-  color: white !important;
+  color: white;
 }
 
 /* Navbar Brand / Logo */
