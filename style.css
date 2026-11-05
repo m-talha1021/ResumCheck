@@ -3924,7 +3924,9 @@ header a {
   .nav-inner a:hover{
     color: white !important;
   }
-
+.brand i:hover{
+  color: white !important;
+}
   .fa-solid fa-file-waveform > span:hover{
     color: white !important;
   }
@@ -3937,6 +3939,10 @@ header a {
 }
 
 .nav-inner a:hover{
+  color: white !important;
+}
+
+.brand i:hover{
   color: white !important;
 }
  .brand > span:hover{
