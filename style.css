@@ -168,8 +168,9 @@ img {
   transition: color .2s
 }
 
-.desktop-nav a:hover {
-  color: white;
+.desktop-nav a:hover,
+.mobile-nav a:hover {
+  color: #0b3fce;
 }
 
 .nav-cta {
@@ -3080,6 +3081,7 @@ section:nth-of-type(even) {
 .brand:hover,
 .navbar a:not(.nav-cta):hover,
 .nav-links a:hover {
+  color: #1d4ed8 !important;
   transition: color 0.2s ease;
 }
 
