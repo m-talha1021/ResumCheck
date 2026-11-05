@@ -3735,3 +3735,39 @@ footer .footer-brand i {
     color-scheme: light !important;
   }
 }
+
+
+/* Hero heading clipping fix */
+.hero {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.hero-copy {
+  min-width: 0;
+  width: 100%;
+}
+
+.hero h1 {
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  padding-inline: 0.08em;
+  letter-spacing: -0.035em;
+  overflow: visible;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.hero h1 span {
+  display: inline;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    letter-spacing: -0.025em;
+    padding-inline: 0.06em;
+  }
+}
