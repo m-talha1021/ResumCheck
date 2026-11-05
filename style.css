@@ -3959,3 +3959,6 @@ header a {
 .fa-solid fa-file-waveform > span:hover{
     color: white !important;
   }
+.brand:hover span {
+    color: inherit; /* Or specify your exact default text color, e.g., #ffffff */
+}
