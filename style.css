@@ -3827,3 +3827,29 @@ section {
     transform: none;
   }
 }
+/* Navbar Color */
+.navbar,
+nav,
+header {
+    background: linear-gradient(90deg, #3730a3, #4f46e5) !important;
+}
+
+/* Navbar Links */
+.navbar a,
+nav a,
+header a {
+    color: #ffffff !important;
+}
+
+/* Navbar Hover */
+.navbar a:hover,
+nav a:hover,
+header a:hover {
+    color: #a5f3fc !important;
+}
+
+/* Navbar Brand / Logo */
+.navbar .logo,
+.navbar .brand {
+    color: #ffffff !important;
+}
